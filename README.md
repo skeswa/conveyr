@@ -115,7 +115,7 @@ Services.create(/* The service  id */ 'create-new-user')
         });
 ```
 
-### Creating Views
+### Binding Stores to Views
 ```javascript
 import React from 'react';
 
@@ -136,4 +136,18 @@ export default React.createClass({
         );
     }
 });
+```
+
+### Creating Emitters
+```javascript
+import {Emitter} from 'delta';
+
+Emitter.create('window-resize')
+    .action('some-action-id' /* or an action instance */)
+    .bind((trigger) => {
+        window.addEventListener('resize', trigger, false);
+    })
+    .unbind((trigger) => {
+        window.removeEventListener('resize', trigger, false);
+    })
 ```
