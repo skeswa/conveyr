@@ -25,11 +25,11 @@ Its as simple as that. Thereafter, views can have other responsibility - such as
 // Flrx exports an "Actions" object
 let {Actions} from 'flrx';
 // Actions are simply functions that are created with the "create" method of the Actions object
-export const CreateUserAction = Actions.create(/* The action id string */ 'create-user');
+export const CreateUserAction = Actions.id(/* The action id string */ 'create-user').create();
 // You can create as many actions as you want!
-export const DeleteUserAction = Actions.create('delete-user');
+export const DeleteUserAction = Actions.id('delete-user').create();
 // However, action ids must be unique - so the following would throw an error
-Actions.create('create-user'); // Uh-oh
+Actions.id('create-user').create(); // Uh-oh
 ```
 ### Invoking Actions
 ```javascript
@@ -71,70 +71,73 @@ export default React.createClass({
 ```javascript
 import {Stores} from 'flrx';
 
-export default Stores.create('users', {
-    someNumberField: Number,
-    someStringField: { type: String, default: 'stuff' },
-    someArrayField: Array,
-    someBooleanField: { type: Boolean, default: false },
-    justKiddingAnotherField: Object
-});
+export default Stores.id('users')
+    .fields({
+        someNumberField:    Number,
+        someStringField:    { type: String, default: 'stuff' },
+        someArrayField:     Array,
+        someBooleanField:   { type: Boolean, default: false },
+        someObjectField:    Object
+    })
+    .create();
 ```
 ### Creating Services
 ```javascript
 import Agent from 'superagent';
-import {Services} from 'flrx';
+import {Services, Endpoints} from 'flrx';
 
 import {CreateUserAction, DeleteUserAction} from './our-user-actions';
 import UserStore from './our-user-store';
 
-export default Services.create('users', [
-    // Here lies the array of endpoints for this service.
-    Services.endpoint(/* The service endpoint id */ 'create')
-        // Actions are the triggers that cause endpoints to be invoked. 
-        // This `actions(...)` function takes the list of actions, action ids,
-        // or regular expressions that can match ids as parameters
-        .actions(CreateUserAction, 'create-user', /create(.+)user/ig)
-        // Services are the only parts of the application that can make changes
-        // to Stores. This `stores(...)` function takes the list of stores or store ids
-        // that this endpoint can affect
-        .stores(UserStore, 'some-other-store')
-        // The handler is the function that performs all of the endpoint's logic
-        .handler((
-            action,     // A reference to the action that invoked this endpoint
-            payload,    // The data passed in by the action
-            stores,     // An object representing all the stores we declared for this endpoint.
-                        // Stores injected into this map are special _mutable_ versions of 
-                        // thmeselves.
-            promise     // The promise is how the endpoint reports that its finished
-        ) => {
-            // The keys of the `stores` map are the store ids of each respective store
-            let {users: UserStore, 'some-other-store': SomeOtherStore} = stores;
-            // Submit our request
-            Agent.post('/users')
-                .send(payload)
-                .end((err, res) => {
-                    if (err) {
-                        promise.reject(err);
-                    } else if (!res.ok) {
-                        promise.reject('Something went wrong :(');
-                    } else {
-                        // Add our new user to the store using the `update(...)` function
-                        UserStore.field('users').update((currentUsers) => {
-                            return currentUsers.concat(res.body);
-                        });
-                        // Resolve the promise since we're done here
-                        promise.resolve();
-                    }
-                });
-        })
-        .create(),
-    // Now that you've seen one, we can be a little more brief
-    Services.endpoint('delete')
-        .actions(DeleteUserAction)
-        .stores(UserStore)
-        .handler(someHandlerFunction)
-        .create()
-]);
+export default Services.id('users')
+    .endpoints([
+        // Here lies the array of endpoints for this service.
+        Endpoints.id(/* The service endpoint id */ 'create')
+            // Actions are the triggers that cause endpoints to be invoked. 
+            // This `actions(...)` function takes the list of actions, action ids,
+            // or regular expressions that can match ids as parameters
+            .actions(CreateUserAction, 'create-user', /create(.+)user/ig)
+            // Services are the only parts of the application that can make changes
+            // to Stores. This `stores(...)` function takes the list of stores or store ids
+            // that this endpoint can affect
+            .stores(UserStore, 'some-other-store')
+            // The handler is the function that performs all of the endpoint's logic
+            .handler((
+                action,     // A reference to the action that invoked this endpoint
+                payload,    // The data passed in by the action
+                stores,     // An object representing all the stores we declared for this endpoint.
+                            // Stores injected into this map are special _mutable_ versions of 
+                            // thmeselves.
+                promise     // The promise is how the endpoint reports that its finished
+            ) => {
+                // The keys of the `stores` map are the store ids of each respective store
+                let {users: UserStore, 'some-other-store': SomeOtherStore} = stores;
+                // Submit our request
+                Agent.post('/users')
+                    .send(payload)
+                    .end((err, res) => {
+                        if (err) {
+                            promise.reject(err);
+                        } else if (!res.ok) {
+                            promise.reject('Something went wrong :(');
+                        } else {
+                            // Add our new user to the store using the `update(...)` function
+                            UserStore.field('users').update((currentUsers) => {
+                                return currentUsers.concat(res.body);
+                            });
+                            // Resolve the promise since we're done here
+                            promise.resolve();
+                        }
+                    });
+            })
+            .create(),
+        // Now that you've seen one, we can be a little more brief
+        Endpoints.id('delete')
+            .actions(DeleteUserAction)
+            .stores(UserStore)
+            .handler(someHandlerFunction)
+            .create()
+    ]);
 ```
 ### Creating Views
 ```javascript
