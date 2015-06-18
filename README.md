@@ -16,6 +16,6 @@ REST APIs & Websocket Connections are good examples of resources that a Service 
 - **Stores**  
 Stores manage **all** of your application's state.  
 From session information to the results of a search, Stores pass state along to views, and they alone determine what views can render.
-- **Views**
+- **Views**  
 Fundametally, views render data.  
 Its as simple as that. Thereafter, views can have other responsibility - such as, emitting actions when the user interacts with the application via the browser. There are many ways to render data, but flrx is built to use React Components as its views.
