@@ -22,16 +22,16 @@ Its as simple as that. Thereafter, views can have other responsibility - such as
 ## Usage
 ### Creating Actions
 ```javascript
-import {Actions} from 'delta';
+import {Action} from 'delta';
 
 // Actions are simply functions that are created with the "create" method of the Actions object
-let CreateUserAction = Actions.create(/* The action id string */ 'create-user');
+let CreateUserAction = Action.create(/* The action id string */ 'create-user');
 
 // You can create as many actions as you want!
-let DeleteUserAction = Actions.create('delete-user');
+let DeleteUserAction = Action.create('delete-user');
 
 // However, action ids must be unique - so the following would throw an error
-Actions.create('create-user'); // Uh-oh
+Action.create('create-user'); // Uh-oh
 ```
 ### Invoking Actions
 ```javascript
@@ -52,9 +52,9 @@ DeleteUserAction('js@thing.com')
 
 ### Creating Stores
 ```javascript
-import {Stores} from 'delta';
+import {Store} from 'delta';
 
-let UserStore = Stores.create('users')
+let UserStore = Store.create('users')
     .fields({
         someNumberField:    Number,
         someStringField:    { type: String, default: 'stuff' },
@@ -67,20 +67,21 @@ let UserStore = Stores.create('users')
 ### Creating Services
 ```javascript
 import Agent from 'superagent';
-import {Services} from 'delta';
+import {Service} from 'delta';
 
 import {CreateUserAction, DeleteUserAction} from './my-actions';
 import {UserStore} from './my-stores';
 
-// Here lies the array of stores for this service.
-Services.create(/* The service  id */ 'create-new-user')
+Service.create(/* The service  id */ 'create-new-user')
     // These actions are the triggers that cause this service to be invoked. 
     // The `actions(...)` function takes the list of actions, action ids,
     // or regular expressions that can match ids as parameters
+    // (Also, the `action(...)` function can also be used for single actions)
     .actions(CreateUserAction, 'create-user', /create(.+)user/ig)
-    // Services are the only parts of the application that can make changes
+    // Service are the only parts of the application that can make changes
     // to Stores. This `stores(...)` function takes the list of stores or store ids
     // that this endpoint has permission to mutate.
+    // (Also, the `store(...)` function can also be used for single stores)
     .stores(UserStore, 'some-other-store')
     // The handler is the function that performs all of the endpoint's logic
     .handler(
