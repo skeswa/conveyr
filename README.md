@@ -67,6 +67,18 @@ export default React.createClass({
     }
 });
 ```
+### Creating Stores
+```javascript
+import {Stores} from 'flrx';
+
+export default Stores.create('users', {
+    someNumberField: Number,
+    someStringField: { type: String, default: 'stuff' },
+    someArrayField: Array,
+    someBooleanField: { type: Boolean, default: false },
+    justKiddingAnotherField: Object
+});
+```
 ### Creating Services
 ```javascript
 import Agent from 'superagent';
@@ -120,22 +132,29 @@ export default Services.create('users', [
     Services.endpoint('delete')
         .actions(DeleteUserAction)
         .stores(UserStore)
-        .handler((_, payload, stores, promise) => {
-            Agent.delete('/users')
-                .query({ id: payload })
-                .end((err, res) => {
-                    if (err) promise.reject(err);
-                    else if (!res.ok) promise.reject('Something went wrong :(');
-                    else {
-                        let UserStore = stores.user;
-                        UserStore.field('users').update((currentUsers) => {
-                            return currentUsers.filter((user) => {
-                                return user.id === payload;
-                            });
-                        });
-                    }
-                });
-        })
+        .handler(someHandlerFunction)
         .create()
 ]);
+```
+### Creating Views
+```javascript
+import React from 'react';
+
+import UserStore from './our-user-store';
+
+export default React.createClass({
+    getInitialState() {
+        return {
+            someValue: 1,
+            someOtherValue: 2,
+            storeBoundValue: UserStore.field('someField').bind(this)
+        };
+    },
+    
+    render() {
+        return (
+            <div>Store-bound value is {this.state.storeBoundValue}</div>
+        );
+    }
+});
 ```
