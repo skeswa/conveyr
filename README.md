@@ -6,7 +6,6 @@ In accordance with the flux architecture, flrx follows a **unidirectional data f
 
 ![Diagram](https://raw.github.com/skeswa/flrx/master/docs/diagram.jpg)  
 
-### Anatomy
 - **Actions**  
 Actions are events that describe their consequences.  
 For example, consider an event that follows a user clicking a button that closes a window. An ordinary event emitted after this event could be called `close-button-clicked`. However, if instead we used an Action, it might be called `close-window`. Observe how actions describe intent while typical events do not.
