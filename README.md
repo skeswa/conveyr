@@ -14,5 +14,8 @@ For example, consider an event that follows a user clicking a button that closes
 Services connect your application to external resources.  
 REST APIs & Websocket Connections are good examples of resources that a Service would interact with. Actions drive how Services interact interact with external resources, and changes in application state that result from these interactions are propagated to Stores.
 - **Stores**  
-Stores maintain **all** of . TODODODODODODODODODODOODODDODO.
-- **Views**<br>Wheras typical events describe an occurence, actions are events that describe their consequences. TODODODODODODODODODODODODO.
+Stores manage **all** of your application's state.  
+From session information to the results of a search, Stores pass state along to views, and they alone determine what views can render.
+- **Views**
+Fundametally, views render data.  
+Its as simple as that. Thereafter, views can have other responsibility - such as, emitting actions when the user interacts with the application via the browser. There are many ways to render data, but flrx is built to use React Components as its views.
