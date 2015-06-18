@@ -92,7 +92,7 @@ import UserStore from './our-user-store';
 export default Services.id('users')
     .endpoints([
         // Here lies the array of endpoints for this service.
-        Endpoints.id(/* The service endpoint id */ 'create')
+        Endpoints.id(/* The service endpoint id */ 'create-new-user')
             // Actions are the triggers that cause endpoints to be invoked. 
             // This `actions(...)` function takes the list of actions, action ids,
             // or regular expressions that can match ids as parameters
@@ -132,7 +132,7 @@ export default Services.id('users')
             })
             .create(),
         // Now that you've seen one, we can be a little more brief
-        Endpoints.id('delete')
+        Endpoints.id('delete-existing-user')
             .actions(DeleteUserAction)
             .stores(UserStore)
             .handler(someHandlerFunction)
