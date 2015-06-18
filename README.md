@@ -41,7 +41,7 @@ import {CreateUserAction, DeleteUserAction} from './our-user-actions';
 export default React.createClass({
     onCreateClicked() {
         // Actions can be invoked just like functions.
-        // This means you can give them as many arguments as you want.
+        // However, Actions take *up to one argument*, so use it wisely
         CreateUserAction({ name: 'John Smith', email: 'js@thing.com', age: 20 }); 
     },
     
@@ -77,10 +77,25 @@ import UserStore from './our-user-store';
 export default Services.create('users', [
     // Here lies the array of endpoints for this service.
     Services.endpoint(/* The service endpoint id */ 'create')
-        // Triggers cause the Endpoint to be invoked. 
-        // Triggers can be actions, action ids, or regular expressions that can match ids
-        // FYI Multiple matching triggers will only execute endpoint once
-        .triggers(CreateUserAction, 'create-user', /create(.+)user/ig)
-        .stores(
+        // Actions are the triggers that cause endpoints to be invoked. 
+        // This `actions(...)` function takes the list of actions, action ids,
+        // or regular expressions that can match ids as parameters
+        .actions(CreateUserAction, 'create-user', /create(.+)user/ig)
+        // Services are the only parts of the application that can make changes
+        // to Stores. This `stores(...)` function takes the list of stores or store ids
+        // that this endpoint can affect
+        .stores(UserStore, 'some-other-store')
+        // The handler is the function that performs all of the endpoint's logic
+        .handler((
+            trigger,    // A reference to the trigger that invoked this endpoint
+            payload,    // The data passed in by the trigger
+            stores,     // An object representing all the stores we declared for this endpoint.
+                        // Stores injected into this map are special _mutable_ versions of 
+                        // thmeselves.
+            promise     // The promise is how the endpoint reports that its finished
+        ) => {
+            // The keys of the `stores` map are the store ids of each respective store
+            let {users: UserStore, 'some-other-store': SomeOtherStore} = stores;
+        });
 ]);
 ```
