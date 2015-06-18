@@ -69,9 +69,10 @@ export default React.createClass({
 ```
 ### Creating Services
 ```javascript
+import Agent from 'superagent';
 import {Services} from 'flrx';
 
-import {CreateUserAction} from './our-user-actions';
+import {CreateUserAction, DeleteUserAction} from './our-user-actions';
 import UserStore from './our-user-store';
 
 export default Services.create('users', [
@@ -87,8 +88,8 @@ export default Services.create('users', [
         .stores(UserStore, 'some-other-store')
         // The handler is the function that performs all of the endpoint's logic
         .handler((
-            trigger,    // A reference to the trigger that invoked this endpoint
-            payload,    // The data passed in by the trigger
+            action,     // A reference to the action that invoked this endpoint
+            payload,    // The data passed in by the action
             stores,     // An object representing all the stores we declared for this endpoint.
                         // Stores injected into this map are special _mutable_ versions of 
                         // thmeselves.
@@ -96,6 +97,45 @@ export default Services.create('users', [
         ) => {
             // The keys of the `stores` map are the store ids of each respective store
             let {users: UserStore, 'some-other-store': SomeOtherStore} = stores;
-        });
+            // Submit our request
+            Agent.post('/users')
+                .send(payload)
+                .end((err, res) => {
+                    if (err) {
+                        promise.reject(err);
+                    } else if (!res.ok) {
+                        promise.reject('Something went wrong :(');
+                    } else {
+                        // Add our new user to the store using the `update(...)` function
+                        UserStore.field('users').update((currentUsers) => {
+                            return currentUsers.concat(res.body);
+                        });
+                        // Resolve the promise since we're done here
+                        promise.resolve();
+                    }
+                });
+        })
+        .create(),
+    // Now that you've seen one, we can be a little more brief
+    Services.endpoint('delete')
+        .actions(DeleteUserAction)
+        .stores(UserStore)
+        .handler((_, payload, stores, promise) => {
+            Agent.delete('/users')
+                .query({ id: payload })
+                .end((err, res) => {
+                    if (err) promise.reject(err);
+                    else if (!res.ok) promise.reject('Something went wrong :(');
+                    else {
+                        let UserStore = stores.user;
+                        UserStore.field('users').update((currentUsers) => {
+                            return currentUsers.filter((user) => {
+                                return user.id === payload;
+                            });
+                        });
+                    }
+                });
+        })
+        .create()
 ]);
 ```
