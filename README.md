@@ -116,29 +116,6 @@ Service.create(/* The service  id */ 'create-new-user')
         });
 ```
 
-### Binding Stores to Views
-```javascript
-import React from 'react';
-
-import {UserStore} from './my-stores';
-
-export default React.createClass({
-    getInitialState() {
-        return {
-            someValue: 1,
-            someOtherValue: 2,
-            storeBoundValue: UserStore.field('someField').bind(this)
-        };
-    },
-    
-    render() {
-        return (
-            <div>Store-bound value is {this.state.storeBoundValue}</div>
-        );
-    }
-});
-```
-
 ### Creating Emitters
 ```javascript
 import {Emitter} from 'delta';
@@ -151,4 +128,69 @@ Emitter.create('window-resize')
     .unbind((trigger) => {
         window.removeEventListener('resize', trigger, false);
     })
+```
+
+### Using Traditional React Components
+```javascript
+import React from 'react';
+
+import {UserStore} from './my-stores';
+
+export default React.createClass({
+    mixins: [
+        UserStore.field('someField').mixin(),           // Adds "someField" to the "this.fields" map
+        UserStore.field('someOtherField').mixin('meep') // Adds "meep" to the "this.fields" map, but "meep" maps
+                                                        // to UserStore.someOtherField's value
+    ],
+    
+    getInitialState() {
+        return {
+            someValue: 1,
+            someOtherValue: 2
+        };
+    },
+    
+    render() {
+        return (
+            <div>Store-bound values are {this.fields.someField} and {this.fields.meep}</div>
+        );
+    }
+});
+```
+
+### Using ES6-Style React Components
+```javascript
+import React from 'react';
+import {View} from 'delta';
+
+import {UserStore} from './my-stores';
+
+// View is a sub-class of React.Component
+export default class SomeComponent extends View {
+    constructor() {
+        // The initial state of this component
+        this.state = {
+            someValue: 1,
+            someOtherValue: 2
+        };
+        // The store fields of this component
+        this.fields = {
+            someField: UserStore.field('someField'),
+            meep: UserStore.field('someOtherField').mixin('meep')
+        };
+    },
+    
+    getInitialState() {
+        return {
+            someValue: 1,
+            someOtherValue: 2
+        };
+    },
+    
+    render() {
+        return (
+            <div>Store-bound values are {this.fields.someField} and {this.fields.meep}</div>
+        );
+    }
+}
 ```
