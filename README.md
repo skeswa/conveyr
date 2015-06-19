@@ -1,5 +1,5 @@
 # delta
-Delta is a simple interpretation of Facebook's [Flux](https://facebook.github.io/flux/) architecture that makes building modern web applications with [React](https://facebook.github.io/react/) simple.
+By using the best parts of Facebook's [Flux](https://facebook.github.io/flux/) architecture, delta makes building modern web applications with [React](https://facebook.github.io/react/) simple.
 
 ## Design
 In accordance with the Flux architecture, delta follows a **unidirectional data flow**. This means that all activity in the application follows a predictable pattern that is easy to follow.  
