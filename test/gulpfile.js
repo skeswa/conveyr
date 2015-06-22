@@ -62,9 +62,8 @@ gulp.task('test', ['compile:tests'], function(done) {
                             process.exit(1);
                         } else {
                             gutil.log(gutil.colors.green('✓ All tests executed successfully!'));
+                            process.exit(0);
                         }
-                        // Finish up
-                        done();
                     });
                 }
             });
