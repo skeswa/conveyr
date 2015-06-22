@@ -1,0 +1,33 @@
+{
+  "name": "delta",
+  "version": "0.0.0",
+  "description": "A simple Flux implementation for the rest of us.",
+  "main": "lib/index.js",
+  "directories": {
+    "doc": "docs",
+    "test": "test"
+  },
+  "dependencies": {
+    "babel": "^5.6.3",
+    "eventemitter2": "^0.4.14"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "cd ./test; gulp; cd ..;"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/skeswa/delta.git"
+  },
+  "keywords": [
+    "flux",
+    "delta",
+    "react"
+  ],
+  "author": "Sandile Keswa",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/skeswa/delta/issues"
+  },
+  "homepage": "https://github.com/skeswa/delta#readme"
+}
