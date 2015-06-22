@@ -1,4 +1,4 @@
-# delta
+# delta ![status](https://travis-ci.org/skeswa/delta.svg?branch=develop) [![NPM Version](https://img.shields.io/badge/npm-delta--flux-red.svg)](https://www.npmjs.org/package/delta-flux)
 By using the best parts of Facebook's [Flux](https://facebook.github.io/flux/) architecture, delta makes building modern web applications with [React](https://facebook.github.io/react/) simple.
 
 ## Design
@@ -22,6 +22,7 @@ Its as simple as that. Thereafter, views can have other responsibility - such as
 ## Todos
 - [x] Actions
 - [x] Services
+- [ ] Service dependency injection
 - [ ] Stores
 - [ ] Views
 - [ ] Logging
@@ -138,7 +139,7 @@ Emitter.create('window-resize')
     })
 ```
 
-### Using Traditional React Components
+### Creating Views
 ```javascript
 import React from 'react';
 
@@ -164,41 +165,4 @@ export default React.createClass({
         );
     }
 });
-```
-
-### Using ES6-Style React Components
-```javascript
-import React from 'react';
-import {View} from 'delta';
-
-import {UserStore} from './my-stores';
-
-// View is a sub-class of React.Component
-export default class SomeComponent extends View {
-    constructor() {
-        // The initial state of this component
-        this.state = {
-            someValue: 1,
-            someOtherValue: 2
-        };
-        // The store fields of this component
-        this.fields = {
-            someField: UserStore.field('someField'),
-            meep: UserStore.field('someOtherField').mixin('meep')
-        };
-    },
-    
-    getInitialState() {
-        return {
-            someValue: 1,
-            someOtherValue: 2
-        };
-    },
-    
-    render() {
-        return (
-            <div>Store-bound values are {this.fields.someField} and {this.fields.meep}</div>
-        );
-    }
-}
 ```

@@ -59,11 +59,11 @@ gulp.task('test', ['compile:tests'], function(done) {
                     mocha.run(function(failures) {
                         if (failures > 0) {
                             gutil.log(gutil.colors.red('✗ The tests didn\'t execute successfully.'));
+                            process.exit(1);
                         } else {
                             gutil.log(gutil.colors.green('✓ All tests executed successfully!'));
+                            process.exit(0);
                         }
-                        // Finish up
-                        done();
                     });
                 }
             });
