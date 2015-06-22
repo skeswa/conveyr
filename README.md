@@ -74,10 +74,9 @@ import {UserStore} from './my-stores';
 
 Service.create(/* The service  id */ 'create-new-user')
     // These actions are the triggers that cause this service to be invoked. 
-    // The `actions(...)` function takes the list of actions, action ids,
-    // or regular expressions that can match ids as parameters
+    // The `actions(...)` function takes the list of actions or action ids.
     // (Also, the `action(...)` function can also be used for single actions)
-    .actions(CreateUserAction, 'create-user', /create(.+)user/ig)
+    .actions(CreateUserAction, 'create-user')
     // Service are the only parts of the application that can make changes
     // to Stores. This `stores(...)` function takes the list of stores or store ids
     // that this endpoint has permission to mutate.
@@ -88,19 +87,20 @@ Service.create(/* The service  id */ 'create-new-user')
         function(
             context,    // Reference that gives this service handler the ability
                         // to mutate the stores it declared as related
-            action,     // A reference to the action that invoked this service handler
+            actionId,   // The id of the action that invoked this service handler
             payload,    // The data passed in by the action
-            promise     // The promise is how the endpoint reports that its finished
+            done        // The error-first callback that indicates whether the handled
+                        // was able to execute successfully
         ) {
             // Submit our request
             Agent.post('/users')
                 .send(payload)
                 .end((err, res) => {
                     if (err) {
-                        promise.reject(err);
+                        done(err);
                     } else if (!res.ok) {
                         // Very standard promise behavior here
-                        promise.reject('Something went wrong :(');
+                        done('Something went wrong :(');
                     } else {
                         // Add our new user to the store using the `update(...)` function.
                         // The update function takes the provided context parameter and a
@@ -110,7 +110,8 @@ Service.create(/* The service  id */ 'create-new-user')
                             return currentUsers.concat(res.body);
                         });
                         // Resolve the promise since we're done here
-                        promise.resolve();
+                        // NOTE: make sure you call this - there *is* a timeout that results in an error
+                        done();
                     }
                 });
         });
