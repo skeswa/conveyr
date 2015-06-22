@@ -22,7 +22,7 @@ describe('Action.create(...)', () => {
     });
 });
 
-describe('Action Trigger', () => {
+describe('action(...)', () => {
     it('creates emitter event', (done) => {
         const testAction3 = Action.create('test-action-3');
         // Subscribe to `test-action-3`
