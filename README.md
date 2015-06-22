@@ -19,6 +19,13 @@ From session information to the results of a search, Stores pass state along to 
 Fundametally, views render data.  
 Its as simple as that. Thereafter, views can have other responsibility - such as, emitting actions when the user interacts with the application via the browser. Delta is built to use React Components as its views.  
 
+## Todos
+- [x] Actions
+- [x] Services
+- [ ] Stores
+- [ ] Views
+- [ ] Logging
+
 ## Usage
 ### Creating Actions
 ```javascript
