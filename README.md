@@ -1,5 +1,5 @@
 # delta
-Delta is a simple interpretation of Facebook's [Flux](https://facebook.github.io/flux/) architecture that makes building modern web applications with [React](https://facebook.github.io/react/) simple.
+By using the best parts of Facebook's [Flux](https://facebook.github.io/flux/) architecture, delta makes building modern web applications with [React](https://facebook.github.io/react/) simple.
 
 ## Design
 In accordance with the Flux architecture, delta follows a **unidirectional data flow**. This means that all activity in the application follows a predictable pattern that is easy to follow.  
@@ -10,14 +10,21 @@ In accordance with the Flux architecture, delta follows a **unidirectional data 
 Actions are events that describe their consequences.  
 For example, consider an event that follows a user clicking a button that closes a window. An ordinary event emitted after this event could be called `close-button-clicked`. However, if instead we used an Action, it might be called `close-window`. Observe how actions describe intent while typical events do not.
 - **Services**  
-Services connect your application to external resources.  
-REST APIs & Websocket Connections are good examples of resources that a Service would interact with. Actions drive how Services interact interact with external resources, and changes in application state that result from these interactions are propagated to Stores.
+Services change your application state.  
+Actions are responsible for triggering Services. Services are responsible with permuting application stateREST APIs & Websocket Connections are good examples of resources that a Service would interact with.  interact interact with external resources, and changes in application state that result from these interactions are propagated to Stores.
 - **Stores**  
 Stores manage **all** of your application's state.  
 From session information to the results of a search, Stores pass state along to views, and they alone determine what views can render.
 - **Views**  
 Fundametally, views render data.  
 Its as simple as that. Thereafter, views can have other responsibility - such as, emitting actions when the user interacts with the application via the browser. Delta is built to use React Components as its views.  
+
+## Todos
+- [x] Actions
+- [x] Services
+- [ ] Stores
+- [ ] Views
+- [ ] Logging
 
 ## Usage
 ### Creating Actions
@@ -74,10 +81,9 @@ import {UserStore} from './my-stores';
 
 Service.create(/* The service  id */ 'create-new-user')
     // These actions are the triggers that cause this service to be invoked. 
-    // The `actions(...)` function takes the list of actions, action ids,
-    // or regular expressions that can match ids as parameters
+    // The `actions(...)` function takes the list of actions or action ids.
     // (Also, the `action(...)` function can also be used for single actions)
-    .actions(CreateUserAction, 'create-user', /create(.+)user/ig)
+    .actions(CreateUserAction, 'create-user')
     // Service are the only parts of the application that can make changes
     // to Stores. This `stores(...)` function takes the list of stores or store ids
     // that this endpoint has permission to mutate.
@@ -88,19 +94,20 @@ Service.create(/* The service  id */ 'create-new-user')
         function(
             context,    // Reference that gives this service handler the ability
                         // to mutate the stores it declared as related
-            action,     // A reference to the action that invoked this service handler
+            actionId,   // The id of the action that invoked this service handler
             payload,    // The data passed in by the action
-            promise     // The promise is how the endpoint reports that its finished
+            done        // The error-first callback that indicates whether the handled
+                        // was able to execute successfully
         ) {
             // Submit our request
             Agent.post('/users')
                 .send(payload)
                 .end((err, res) => {
                     if (err) {
-                        promise.reject(err);
+                        done(err);
                     } else if (!res.ok) {
                         // Very standard promise behavior here
-                        promise.reject('Something went wrong :(');
+                        done('Something went wrong :(');
                     } else {
                         // Add our new user to the store using the `update(...)` function.
                         // The update function takes the provided context parameter and a
@@ -110,33 +117,11 @@ Service.create(/* The service  id */ 'create-new-user')
                             return currentUsers.concat(res.body);
                         });
                         // Resolve the promise since we're done here
-                        promise.resolve();
+                        // NOTE: make sure you call this - there *is* a timeout that results in an error
+                        done();
                     }
                 });
         });
-```
-
-### Binding Stores to Views
-```javascript
-import React from 'react';
-
-import {UserStore} from './my-stores';
-
-export default React.createClass({
-    getInitialState() {
-        return {
-            someValue: 1,
-            someOtherValue: 2,
-            storeBoundValue: UserStore.field('someField').bind(this)
-        };
-    },
-    
-    render() {
-        return (
-            <div>Store-bound value is {this.state.storeBoundValue}</div>
-        );
-    }
-});
 ```
 
 ### Creating Emitters
@@ -151,4 +136,69 @@ Emitter.create('window-resize')
     .unbind((trigger) => {
         window.removeEventListener('resize', trigger, false);
     })
+```
+
+### Using Traditional React Components
+```javascript
+import React from 'react';
+
+import {UserStore} from './my-stores';
+
+export default React.createClass({
+    mixins: [
+        UserStore.field('someField').mixin(),           // Adds "someField" to the "this.fields" map
+        UserStore.field('someOtherField').mixin('meep') // Adds "meep" to the "this.fields" map, but "meep" maps
+                                                        // to UserStore.someOtherField's value
+    ],
+    
+    getInitialState() {
+        return {
+            someValue: 1,
+            someOtherValue: 2
+        };
+    },
+    
+    render() {
+        return (
+            <div>Store-bound values are {this.fields.someField} and {this.fields.meep}</div>
+        );
+    }
+});
+```
+
+### Using ES6-Style React Components
+```javascript
+import React from 'react';
+import {View} from 'delta';
+
+import {UserStore} from './my-stores';
+
+// View is a sub-class of React.Component
+export default class SomeComponent extends View {
+    constructor() {
+        // The initial state of this component
+        this.state = {
+            someValue: 1,
+            someOtherValue: 2
+        };
+        // The store fields of this component
+        this.fields = {
+            someField: UserStore.field('someField'),
+            meep: UserStore.field('someOtherField').mixin('meep')
+        };
+    },
+    
+    getInitialState() {
+        return {
+            someValue: 1,
+            someOtherValue: 2
+        };
+    },
+    
+    render() {
+        return (
+            <div>Store-bound values are {this.fields.someField} and {this.fields.meep}</div>
+        );
+    }
+}
 ```
