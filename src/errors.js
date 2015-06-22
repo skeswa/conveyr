@@ -39,3 +39,10 @@ export function InvalidStoreRefsError() {
         `Please double-check that the store references for this service exist.`
     );
 }
+
+export function MissingCallbackError() {
+    return new Error(
+        `No callback was provided as an argument to the handler. ` +
+        `Callbacks are required for Service handler functions.`
+    );
+}

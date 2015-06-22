@@ -91,6 +91,8 @@ Service.create(/* The service  id */ 'create-new-user')
     // (Also, the `store(...)` function can also be used for single stores)
     .stores(UserStore, 'some-other-store')
     // The handler is the function that performs all of the endpoint's logic
+    // NOTE: the handler function is dependency injected - so you can pick and 
+    //       choose what parameters you want 
     .handler(
         function(
             context,    // Reference that gives this service handler the ability

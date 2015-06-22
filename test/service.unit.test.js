@@ -82,7 +82,7 @@ describe('Service.stores(...)', () => {
     it('registers mutators with stores', () => {
         const testServiceStore4 = Store.create('test-service-store-4');
         const testServiceStore5 = Store.create('test-service-store-5');
-        const testService8 = Service.create('test-service-8').handler(() => {});
+        const testService8 = Service.create('test-service-8').handler(done => done());
 
         testService8.stores(testServiceStore4, testServiceStore5);
         assert(testServiceStore4.__mutatorContexts.indexOf(testService8.__mutatorContext.mutatorContextId) !== -1, 'store 4 should have registered the services mutator');
@@ -116,39 +116,26 @@ describe('Service.handler(...)', () => {
     });
 
     it('set new handler internally', () => {
-        const testHandler = () => {};
+        const testHandler = (callback) => { callback() };
         const testService11 = Service.create('test-service-11').handler(testHandler);
 
         assert(testService11.__handler === testHandler, 'store should have the updated handler field');
     });
 });
 
-describe('Service.handler(...)', () => {
-    it('has validation', () => {
-        const notAHandler = 5;
-
-        assert.throw(() => Service.create('test-service-10').handler(notAHandler), undefined, undefined, 'handler() should fail for a handler that isn\'t a function');
-    });
-
-    it('set new handler internally', () => {
-        const testHandler = () => {};
-        const testService11 = Service.create('test-service--11').handler(testHandler);
-
-        assert(testService11.__handler === testHandler, 'store should have the updated handler field');
-    });
-});
-
 describe('Service handler logic', () => {
-    it('receives correct arguments', (done) => {
+    it('receives correct arguments', (_done) => {
         const testServiceAction9 = Action.create('test-service-action-9');
-        const testService13 = Service.create('test-service-13').actions(testServiceAction9).handler(function(...args) {
-            assert(args.length === 4, 'There should be exactly four arguments');
-            assert(isStoreMutatorContext(args[0]), 'First arg should be the mutator context');
-            assert.equal(args[1], 'test-service-action-9', 'Second arg should be the actionId');
-            assert.equal(args[2], 'test', 'Third arg should be the payload');
-            assert.isFunction(args[3], 'Fourth arg should be the callback');
-            (args[3])();
-            done();
+        const testService13 = Service.create('test-service-13').actions(testServiceAction9).handler(function(callback, action, context, data, payload, done, finish) {
+            assert.isUndefined(callback, 'The callback should be usurped by one of its duplicates');
+            assert.equal(action, 'test-service-action-9', 'Second arg should be the actionId');
+            assert(isStoreMutatorContext(context), 'The context parameter should be the mutator context');
+            assert.isUndefined(data, 'The data arg should be usurped by one of its duplicates');
+            assert.equal(payload, 'test', 'Third arg should be the payload');
+            assert.isUndefined(done, 'The done should be usurped by one of its duplicates');
+            assert.isFunction(finish, 'Last arg should be the callback');
+            finish();
+            _done();
         });
 
         testServiceAction9('test');
@@ -156,7 +143,7 @@ describe('Service handler logic', () => {
 
     it('reacts to action events', (finished) => {
         const testServiceAction8 = Action.create('test-service-action-8');
-        const testService12 = Service.create('test-service-12').actions(testServiceAction8).handler((c, a, p, done) => {
+        const testService12 = Service.create('test-service-12').actions(testServiceAction8).handler((done) => {
             setTimeout(() => done(), 250);
         });
         subscribe(['test-service-action-8', 'completed'], () => finished());
