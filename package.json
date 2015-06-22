@@ -1,6 +1,6 @@
 {
   "name": "delta",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "A simple Flux implementation for the rest of us.",
   "main": "lib/index.js",
   "directories": {
