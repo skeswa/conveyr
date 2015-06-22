@@ -8,11 +8,13 @@ import {
     InvalidParameterTypeError,
     EmptyParameterError,
     IllegalIdError,
-    IdAlreadyExistsError
+    IdAlreadyExistsError,
+    InvalidActionRefsError,
+    InvalidStoreRefsError
 } from './errors';
 
 import {isActionId, getAction, ActionResult, ACTION_EXPIRATION_EVENT} from './action';
-import {isStoreId, generateMutatorContext, isStore} from './store';
+import {isStoreId, getStore, generateMutatorContext, isStore} from './store';
 
 /***************************** MODULE CONSTANTS ******************************/
 
@@ -138,6 +140,10 @@ class Service {
             if (isString(actionRef)) return actionRef;
             else return actionRef.__actionId;
         });
+        // Scream and shout if even _one_ of the refs was invalid
+        if (actionIds.length < actionRefs.length) {
+            throw InvalidActionRefsError();
+        }
         // Apply new action ids to this service
         this.__actionIds = actionIds;
         // Resubscribe to incoming actions
@@ -164,6 +170,10 @@ class Service {
             if (isString(storeRef)) return getStore(storeRef);
             else return storeRef;
         });
+        // Scream and shout if even _one_ of the refs was invalid
+        if (stores.length < storeRefs.length) {
+            throw InvalidStoreRefsError();
+        }
         // Apply new store ids to this service
         this.__stores = stores;
         // Become a mutator of the new stores
@@ -173,13 +183,20 @@ class Service {
     }
 
     handler(handler) {
-        // TODO (Sandile): add handler binding here
-        throw new Error('Not implemented yet');
+        if (!isFunction(handler)) throw InvalidParameterTypeError('handler', 'function');
+
+        // Unsubscribe before changing action ids
+        this.__unsubscribeHandlerFromActions();
+        // Sets the new handler
+        this.__handler = handler
+        // Resubscribe to incoming actions
+        this.__subscribeHandlerToActions();
+        // Return this service for chaining
+        return this;
     }
 }
 
 /****************************** MODULE EXPORTS *******************************/
-
 
 export function createService(serviceId) {
     // Validation
@@ -187,10 +204,18 @@ export function createService(serviceId) {
     if (isEmpty(serviceId)) throw EmptyParameterError('serviceId');
     if (serviceId.indexOf(LISTENER_NAMESPACE_SEPARATOR) !== -1) throw IllegalIdError('serviceId');
     if (serviceMap.has(serviceId)) throw IdAlreadyExistsError(serviceId);
-    // Create new action trigger
-    const trigger = ActionTrigger.bind(undefined, actionId);
+    // Create new service
+    const service = new Service(serviceId);
     // Register the actionId and trigger
-    actionTriggerMap.set(actionId, trigger);
+    serviceMap.set(serviceId, service);
     // Return the trigger
-    return trigger;
+    return service;
+}
+
+export function isServiceId(serviceId) {
+    return serviceMap.has(serviceId);
+}
+
+export function isService(service) {
+    return service instanceof Service;
 }

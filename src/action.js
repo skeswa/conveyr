@@ -2,8 +2,6 @@
 
 /****************************** MODULE IMPORTS *******************************/
 
-import {Promise} from 'es6-promise';
-
 import {emit, subscribe, unsubscribe, LISTENER_NAMESPACE_SEPARATOR} from './eventbus';
 import {isString, isEmpty} from './typechecker';
 import {
@@ -100,7 +98,7 @@ export function createAction(actionId) {
 }
 
 export function isActionId(actionId) {
-    return actionTriggerMap.hasKey(actionId);
+    return actionTriggerMap.has(actionId);
 }
 
 export function getAction(actionId) {

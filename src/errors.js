@@ -25,3 +25,17 @@ export function IdAlreadyExistsError(id) {
         `All ids of the same type must be unique.`
     );
 }
+
+export function InvalidActionRefsError() {
+    return new Error(
+        `The provided action references were invalid. ` +
+        `Please double-check that the action references for this service exist.`
+    );
+}
+
+export function InvalidStoreRefsError() {
+    return new Error(
+        `The provided store references were invalid. ` +
+        `Please double-check that the store references for this service exist.`
+    );
+}

@@ -13,7 +13,7 @@ import {
 
 /***************************** MODULE CONSTANTS ******************************/
 
-const RANDOM_CHARACTERS         = ['a', 'b', 'c', 'd', 'e', 'x', 'y', 'z'];
+const RANDOM_CHARACTERS         = ['a', 'b', 'c', 'd', 'e', 'h', 'i', 'j', 'k', 'x', 'y', 'z'];
 const MUTATOR_CONTEXT_ID_LENGTH = 8;
 
 /******************************* MODULE STATE ********************************/
@@ -28,20 +28,21 @@ class StoreMutatorContext {
         const randomSequence = [(nextMutatorContextId++).toString()];
         let i, r;
         for (i = 0; i < MUTATOR_CONTEXT_ID_LENGTH; i++) {
-            r = Math.floor(Math.random() * RANDOM_CHARACTERS.length);
+            r = Math.floor(Math.random() * 1111) % RANDOM_CHARACTERS.length;
             randomSequence.push(RANDOM_CHARACTERS[r]);
         }
-        this.mutatorContextId = randomSequence.join();
+        this.mutatorContextId = randomSequence.join('');
     }
 }
 
 class Store {
-    constructor() {
+    constructor(storeId) {
+        this.__storeId = storeId;
         this.__mutatorContexts = [];
     }
 
     registerMutatorContext(mutatorContext) {
-        if (this.__mutatorContexts.indexOf(mutatorContext.mutatorContextId) !== -1) {
+        if (this.__mutatorContexts.indexOf(mutatorContext.mutatorContextId) === -1) {
             this.__mutatorContexts.push(mutatorContext.mutatorContextId);
         }
     }
@@ -58,10 +59,13 @@ export function createStore(storeId) {
     if (!isString(storeId)) throw InvalidParameterTypeError('storeId', 'String');
     if (isEmpty(storeId)) throw EmptyParameterError('storeId');
     if (storeId.indexOf(LISTENER_NAMESPACE_SEPARATOR) !== -1) throw IllegalIdError('storeId');
-    if (storeTriggerMap.has(storeId)) throw IdAlreadyExistsError(storeId);
+    if (storeMap.has(storeId)) throw IdAlreadyExistsError(storeId);
     // Create the new store
-    // TODO (Sandile): uh, this needs to happen I guess
-    return trigger;
+    const store = new Store(storeId);
+    // Register the store
+    storeMap.set(storeId, store);
+    // Return the new Store
+    return store;
 }
 
 export function getStore(storeId) {
@@ -69,7 +73,7 @@ export function getStore(storeId) {
 }
 
 export function isStoreId(storeId) {
-    return storeMap.hasKey(storeId);
+    return storeMap.has(storeId);
 }
 
 export function isStore(store) {
