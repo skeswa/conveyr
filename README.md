@@ -1,4 +1,4 @@
-# delta
+# delta ![status](https://travis-ci.org/skeswa/delta.svg?branch=develop)
 By using the best parts of Facebook's [Flux](https://facebook.github.io/flux/) architecture, delta makes building modern web applications with [React](https://facebook.github.io/react/) simple.
 
 ## Design
