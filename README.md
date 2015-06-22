@@ -1,4 +1,4 @@
-# delta ![status](https://travis-ci.org/skeswa/delta.svg?branch=develop)
+# delta ![status](https://travis-ci.org/skeswa/delta.svg?branch=develop) [![NPM Version](https://img.shields.io/badge/npm-delta--flux-red.svg)](https://www.npmjs.org/package/delta-flux)
 By using the best parts of Facebook's [Flux](https://facebook.github.io/flux/) architecture, delta makes building modern web applications with [React](https://facebook.github.io/react/) simple.
 
 ## Design
