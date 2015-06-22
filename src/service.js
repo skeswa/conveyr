@@ -124,6 +124,10 @@ class Service {
 
     /**************************** PUBLIC METHODS *****************************/
 
+    action(actionRef) {
+        this.actions(actionRef);
+    }
+
     actions(...actionRefs) {
         // Unsubscribe before changing action ids
         this.__unsubscribeHandlerFromActions();
@@ -152,6 +156,10 @@ class Service {
         this.__subscribeHandlerToActions();
         // Return this service for chaining
         return this;
+    }
+
+    store(storeRef) {
+        this.actions(storeRef);
     }
 
     stores(...storeRefs) {
