@@ -1,9 +1,9 @@
 import {assert} from 'chai';
 
-import {Action, Service, Store} from 'delta';
-import {once, emit, subscribe} from 'delta/lib/eventbus';
-import {isService} from 'delta/lib/service';
-import {isStoreMutatorContext} from 'delta/lib/store';
+import {Action, Service, Store} from '../../lib';
+import {once, emit, subscribe} from '../../lib/eventbus';
+import {isService} from '../../lib/service';
+import {isStoreMutatorContext} from '../../lib/store';
 
 describe('Service.create(...)', () => {
     it('exists', () => {

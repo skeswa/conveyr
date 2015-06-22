@@ -5,4 +5,4 @@ node_js:
   - "0.10"
   - "0.8"
 before_install:
-  - "cd test; npm install; cd ..;"
+  - "cd test; npm i; cd ..;"

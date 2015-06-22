@@ -1,7 +1,7 @@
 import {assert} from 'chai';
 
-import {Action} from 'delta';
-import {once, emit} from 'delta/lib/eventbus';
+import {Action} from '../../lib/index';
+import {once, emit} from '../../lib/eventbus';
 
 describe('Action.create(...)', () => {
     it('exists', () => {
