@@ -80,6 +80,10 @@ export function isStore(store) {
     return store instanceof Store;
 }
 
+export function isStoreMutatorContext(context) {
+    return context instanceof StoreMutatorContext;
+}
+
 export function generateMutatorContext() {
     return new StoreMutatorContext();
 }

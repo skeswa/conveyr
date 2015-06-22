@@ -1,8 +1,9 @@
 import {assert} from 'chai';
 
 import {Action, Service, Store} from 'delta';
-import {once, emit} from 'delta/lib/eventbus';
+import {once, emit, subscribe} from 'delta/lib/eventbus';
 import {isService} from 'delta/lib/service';
+import {isStoreMutatorContext} from 'delta/lib/store';
 
 describe('Service.create(...)', () => {
     it('exists', () => {
@@ -104,5 +105,61 @@ describe('Service.stores(...)', () => {
         assert(testService9.__stores.indexOf(testServiceStore7) === -1, 'store ids array should not contain store 7');
         assert(testService9.__stores.indexOf(testServiceStore8) !== -1, 'store ids array should contain store 8');
         assert(testService9.__stores.indexOf(testServiceStore9) !== -1, 'store ids array should contain store 9');
+    });
+});
+
+describe('Service.handler(...)', () => {
+    it('has validation', () => {
+        const notAHandler = 5;
+
+        assert.throw(() => Service.create('test-service-10').handler(notAHandler), undefined, undefined, 'handler() should fail for a handler that isn\'t a function');
+    });
+
+    it('set new handler internally', () => {
+        const testHandler = () => {};
+        const testService11 = Service.create('test-service-11').handler(testHandler);
+
+        assert(testService11.__handler === testHandler, 'store should have the updated handler field');
+    });
+});
+
+describe('Service.handler(...)', () => {
+    it('has validation', () => {
+        const notAHandler = 5;
+
+        assert.throw(() => Service.create('test-service-10').handler(notAHandler), undefined, undefined, 'handler() should fail for a handler that isn\'t a function');
+    });
+
+    it('set new handler internally', () => {
+        const testHandler = () => {};
+        const testService11 = Service.create('test-service--11').handler(testHandler);
+
+        assert(testService11.__handler === testHandler, 'store should have the updated handler field');
+    });
+});
+
+describe('Service handler logic', () => {
+    it('receives correct arguments', (done) => {
+        const testServiceAction9 = Action.create('test-service-action-9');
+        const testService13 = Service.create('test-service-13').actions(testServiceAction9).handler(function(...args) {
+            assert(args.length === 4, 'There should be exactly four arguments');
+            assert(isStoreMutatorContext(args[0]), 'First arg should be the mutator context');
+            assert.equal(args[1], 'test-service-action-9', 'Second arg should be the actionId');
+            assert.equal(args[2], 'test', 'Third arg should be the payload');
+            assert.isFunction(args[3], 'Fourth arg should be the callback');
+            (args[3])();
+            done();
+        });
+
+        testServiceAction9('test');
+    });
+
+    it('reacts to action events', (finished) => {
+        const testServiceAction8 = Action.create('test-service-action-8');
+        const testService12 = Service.create('test-service-12').actions(testServiceAction8).handler((c, a, p, done) => {
+            setTimeout(() => done(), 250);
+        });
+        subscribe(['test-service-action-8', 'completed'], () => finished());
+        testServiceAction8();
     });
 });

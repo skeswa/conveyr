@@ -13,7 +13,7 @@ import {
     InvalidStoreRefsError
 } from './errors';
 
-import {isActionId, getAction, ActionResult, ACTION_EXPIRATION_EVENT} from './action';
+import {isActionId, getAction, ActionResult, ACTION_COMPLETION_EVENT} from './action';
 import {isStoreId, getStore, generateMutatorContext, isStore} from './store';
 
 /***************************** MODULE CONSTANTS ******************************/
@@ -34,6 +34,8 @@ class Service {
         this.__actionIds        = undefined;
         this.__handler          = undefined;
         this.__mutatorContext   = generateMutatorContext();
+        // Bind the all susceptible functions
+        this.__handlerWrapper = this.__handlerWrapper.bind(this);
     }
 
     /**************************** PRIVATE METHODS ****************************/
@@ -104,15 +106,15 @@ class Service {
             const context = this.__mutatorContext;
             // Get the payload fields
             const {actionId, instanceId, data} = payload;
-            // Compose the expiration event
-            const expirationEvent = [actionId, ACTION_EXPIRATION_EVENT];
+            // Compose the completion event
+            const completionEvent = [actionId, ACTION_COMPLETION_EVENT];
             // Build the callback
             const done = (err) => {
                 if (err !== null && err !== undefined) {
                     // A problem happened
-                    emit(expirationEvent, new ActionResult(payload, err));
+                    emit(completionEvent, new ActionResult(payload, err));
                 } else {
-                    emit(expirationEvent, new ActionResult(payload));
+                    emit(completionEvent, new ActionResult(payload));
                 }
             };
             // Invoke the handler
@@ -188,7 +190,7 @@ class Service {
         // Unsubscribe before changing action ids
         this.__unsubscribeHandlerFromActions();
         // Sets the new handler
-        this.__handler = handler
+        this.__handler = handler;
         // Resubscribe to incoming actions
         this.__subscribeHandlerToActions();
         // Return this service for chaining
