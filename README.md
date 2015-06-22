@@ -22,7 +22,7 @@ Its as simple as that. Thereafter, views can have other responsibility - such as
 ## Todos
 - [x] Actions
 - [x] Services
-- [ ] Service dependency injection
+- [x] Service dependency injection
 - [ ] Stores
 - [ ] Views
 - [ ] Logging
