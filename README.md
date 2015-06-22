@@ -139,7 +139,7 @@ Emitter.create('window-resize')
     })
 ```
 
-### Using Traditional React Components
+### Creating Views
 ```javascript
 import React from 'react';
 
