@@ -93,15 +93,14 @@ Service.create(/* The service  id */ 'create-new-user')
     // The handler is the function that performs all of the endpoint's logic
     // NOTE: the handler function is dependency injected - so you can pick and 
     //       choose what parameters you want 
-    .handler(
-        function(
+    .handler((
             context,    // Reference that gives this service handler the ability
                         // to mutate the stores it declared as related
             actionId,   // The id of the action that invoked this service handler
             payload,    // The data passed in by the action
             done        // The error-first callback that indicates whether the handled
                         // was able to execute successfully
-        ) {
+        ) => {
             // Submit our request
             Agent.post('/users')
                 .send(payload)
