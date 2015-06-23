@@ -1,5 +1,3 @@
-require('babel/polyfill');
-
 import {assert} from 'chai';
 
 import {Action, Service, Store} from '../../lib';
