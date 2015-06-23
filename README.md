@@ -1,10 +1,11 @@
-# delta ![status](https://travis-ci.org/skeswa/delta.svg?branch=develop) [![NPM Version](https://img.shields.io/badge/npm-delta--flux-red.svg)](https://www.npmjs.org/package/delta-flux)
-By using the best parts of Facebook's [Flux](https://facebook.github.io/flux/) architecture, delta makes building modern web applications with [React](https://facebook.github.io/react/) simple.
+# Conveyr
+Conveyr uses the best parts of Facebook's [Flux](https://facebook.github.io/flux/) architecture to make building modern web applications with [React](https://facebook.github.io/react/) simple.  
 
-## Design
-In accordance with the Flux architecture, delta follows a **unidirectional data flow**. This means that all activity in the application follows a predictable pattern that is easy to follow.  
+Conveyr provides tools that create a **unidirectional data flow**. This means that all changes in your application state follow a _predictable_ lifecycle. Ultimately, the advantage of this architecture is its ability to make even the most complicated web applications easy to follow. For more on the unidirectional data flow pattern, watch [this video](https://youtu.be/nYkdrAPrdcw?list=PLb0IAmt7-GS188xDYE-u1ShQmFFGbrk0v).
 
-![Diagram](https://raw.github.com/skeswa/delta/master/docs/diagram.jpg)  
+## Anatomy
+
+![Diagram](https://raw.github.com/skeswa/conveyr/master/docs/diagram.jpg)  
 
 - **Actions**  
 Actions are events that describe their consequences.  
@@ -17,50 +18,49 @@ Stores manage **all** of your application's state.
 From session information to the results of a search, Stores pass state along to views, and they alone determine what views can render.
 - **Views**  
 Fundametally, views render data.  
-Its as simple as that. Thereafter, views can have other responsibility - such as, emitting actions when the user interacts with the application via the browser. Delta is built to use React Components as its views.  
-
-## Todos
-- [x] Actions
-- [x] Services
-- [x] Service dependency injection
-- [ ] Stores
-- [ ] Views
-- [ ] Logging
+Its as simple as that. Thereafter, views can have other responsibility - such as, emitting actions when the user interacts with the application via the browser. Conveyr is built to use React Components as its views.  
 
 ## Usage
 ### Creating Actions
+Actions are created with the `Action.create()` function. The `create()` function takes Action Id string as its only argument. The Action Id represents the Action, and, appropriately, it should be unique. The `create()` function returns an **Action**. The `service()` function of an Action specifies the Service that will be called when the Action is invoked. The `payload()` function of an Action Trigger specifies the structure of the data that should be passed to the Action when it is invoked.
 ```javascript
-import {Action} from 'delta';
+import {Action} from 'conveyr';
+import {SomeService} from './my-services';
 
-// Actions are simply functions that are created with the "create" method of the Actions object
-let CreateUserAction = Action.create(/* The action id string */ 'create-user');
-
-// You can create as many actions as you want!
-let DeleteUserAction = Action.create('delete-user');
-
-// However, action ids must be unique - so the following would throw an error
-Action.create('create-user'); // Uh-oh
+export const SomeAction = Action.create('some-action')
+    // Either a service id or an actual service is passed to this function
+    .service(SomeService /* or 'some-service-id' instead */)
+    // The payload function can either take a flat object map, or just a type.
+    // (e.g. .payload(Number) or .payload({ type: Number, optional: true }))
+    .payload({
+        thing1: Array,
+        thing2: Number,
+        // Below is an example of a fully-qualified type.
+        // Basic javascript type simply evaluate to { optional: false }
+        thing4: { type: String, default: 'woop', optional: true }
+    });
 ```
-### Invoking Actions
+### Using Actions
+Actions are simply functions and should be treated as such. Actions can be invoked with up to _one argument_. This argument is called the **payload** of the Action, and its format is specified by the `payload()` function (example above). If the payload format is specified, then Conveyr will perform validation on Action invocations to make sure the payload is correct.
 ```javascript
-// Actions can be invoked just like functions.
-// However, Actions take *up to one argument*, so use it wisely
-CreateUserAction({ name: 'John Smith', email: 'js@thing.com', age: 20 });
+import {SomeAction} from './my-actions';
 
-// Actions, when invoked, also return a Promise object so that
-// you can tell whether your action was successful or not.
-// Keep in mind that actions will never return a result, so the
-// `then()` callback will always have no parameters
-DeleteUserAction('js@thing.com')
-    .then(() => {
-        console.log('Woot!');
-    })
-    .catch(err => console.error('Eeek! Could not delete the user:', err));
+// Actions can be invoked just like functions.
+// This would throw an error if either `thing1` or `thing2` was not provided.
+SomeAction({ thing1: [1, 2, 3], thing2: '4' });
+```
+Actions also return a [Promise](http://www.html5rocks.com/en/tutorials/es6/promises) so that you can react according to whether Action invocation was successful or not. Also, keep in mind that Action promises *do not return anything* in the successful case of the promise. This means that the `then()` function of the promise will always be passed zero arguments.
+```javascript
+import {SomeOtherAction} from './my-actions';
+
+SomeOtherAction('some argument')
+    .then(() => console.log('Aw yiss.'))
+    .catch(err => console.error('Eeek! It did not work:', err));
 ```
 
 ### Creating Stores
 ```javascript
-import {Store} from 'delta';
+import {Store} from 'conveyr';
 
 let UserStore = Store.create('users')
     .fields({
@@ -75,7 +75,7 @@ let UserStore = Store.create('users')
 ### Creating Services
 ```javascript
 import Agent from 'superagent';
-import {Service} from 'delta';
+import {Service} from 'conveyr';
 
 import {CreateUserAction, DeleteUserAction} from './my-actions';
 import {UserStore} from './my-stores';
@@ -91,16 +91,15 @@ Service.create(/* The service  id */ 'create-new-user')
     // (Also, the `store(...)` function can also be used for single stores)
     .stores(UserStore, 'some-other-store')
     // The handler is the function that performs all of the endpoint's logic
-    // NOTE: the handler function is dependency injected - so you can pick and 
-    //       choose what parameters you want 
-    .handler((
+    .handler(
+        function(
             context,    // Reference that gives this service handler the ability
                         // to mutate the stores it declared as related
             actionId,   // The id of the action that invoked this service handler
             payload,    // The data passed in by the action
             done        // The error-first callback that indicates whether the handled
                         // was able to execute successfully
-        ) => {
+        ) {
             // Submit our request
             Agent.post('/users')
                 .send(payload)
@@ -128,7 +127,7 @@ Service.create(/* The service  id */ 'create-new-user')
 
 ### Creating Emitters
 ```javascript
-import {Emitter} from 'delta';
+import {Emitter} from 'conveyr';
 
 Emitter.create('window-resize')
     .action('some-action-id' /* or an action instance */)
@@ -140,7 +139,7 @@ Emitter.create('window-resize')
     })
 ```
 
-### Creating Views
+### Using Traditional React Components
 ```javascript
 import React from 'react';
 
@@ -167,3 +166,73 @@ export default React.createClass({
     }
 });
 ```
+
+### Using ES6-Style React Components
+```javascript
+import React from 'react';
+import {View} from 'conveyr';
+
+import {UserStore} from './my-stores';
+
+// View is a sub-class of React.Component
+export default class SomeComponent extends View {
+    constructor() {
+        // The initial state of this component
+        this.state = {
+            someValue: 1,
+            someOtherValue: 2
+        };
+        // The store fields of this component
+        this.fields = {
+            someField: UserStore.field('someField'),
+            meep: UserStore.field('someOtherField').mixin('meep')
+        };
+    },
+    
+    getInitialState() {
+        return {
+            someValue: 1,
+            someOtherValue: 2
+        };
+    },
+    
+    render() {
+        return (
+            <div>Store-bound values are {this.fields.someField} and {this.fields.meep}</div>
+        );
+    }
+}
+```
+
+## Todos
+* [ ] Actions
+    * [x] Rewrite documentation
+    * [ ] Add `service()`
+    * [ ] Add `payload()`
+    * [ ] Write a generic argument validator
+    * [ ] Add the payload feature
+    * [ ] Rewrite tests
+* [ ] Services
+    * [ ] Rewrite documentation
+    * [ ] Remove `actions()`
+    * [ ] Rewrite tests
+    * [ ] Write new service-action integration test
+* [ ] Stores
+    * [ ] Touch up documentation
+    * [ ] Write validators
+    * [ ] Finish mutators
+    * [ ] Write tests
+* [ ] Views
+    * [ ] Rewrite not to use mixins
+    * [ ] Touch up the documentation
+    * [ ] Write tests
+    * [ ] Write full-use-case integration test
+* [ ] Emitters
+    * [ ] Write documentation
+    * [ ] Add `bind()`
+    * [ ] Add `action()`
+    * [ ] Write tests
+* [ ] Logging
+    * [ ] Write documentation
+    * [ ] Add logging endpoints everywhere
+    * [ ] Write the `Log` interface
