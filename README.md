@@ -1,10 +1,11 @@
-# delta
-By using the best parts of Facebook's [Flux](https://facebook.github.io/flux/) architecture, delta makes building modern web applications with [React](https://facebook.github.io/react/) simple.
+# Conveyr
+Conveyr uses the best parts of Facebook's [Flux](https://facebook.github.io/flux/) architecture to make building modern web applications with [React](https://facebook.github.io/react/) simple.  
 
-## Design
-In accordance with the Flux architecture, delta follows a **unidirectional data flow**. This means that all activity in the application follows a predictable pattern that is easy to follow.  
+Conveyr provides tools that create a **unidirectional data flow**. This means that all changes in your application state follow a _predictable_ lifecycle. Ultimately, the advantage of this architecture is its ability to make even the most complicated web applications easy to follow. For more on the unidirectional data flow pattern, watch [this video](https://youtu.be/nYkdrAPrdcw?list=PLb0IAmt7-GS188xDYE-u1ShQmFFGbrk0v).
 
-![Diagram](https://raw.github.com/skeswa/delta/master/docs/diagram.jpg)  
+## Anatomy
+
+![Diagram](https://raw.github.com/skeswa/conveyr/master/docs/diagram.jpg)  
 
 - **Actions**  
 Actions are events that describe their consequences.  
@@ -17,19 +18,12 @@ Stores manage **all** of your application's state.
 From session information to the results of a search, Stores pass state along to views, and they alone determine what views can render.
 - **Views**  
 Fundametally, views render data.  
-Its as simple as that. Thereafter, views can have other responsibility - such as, emitting actions when the user interacts with the application via the browser. Delta is built to use React Components as its views.  
-
-## Todos
-- [x] Actions
-- [x] Services
-- [ ] Stores
-- [ ] Views
-- [ ] Logging
+Its as simple as that. Thereafter, views can have other responsibility - such as, emitting actions when the user interacts with the application via the browser. Conveyr is built to use React Components as its views.  
 
 ## Usage
 ### Creating Actions
 ```javascript
-import {Action} from 'delta';
+import {Action} from 'conveyr';
 
 // Actions are simply functions that are created with the "create" method of the Actions object
 let CreateUserAction = Action.create(/* The action id string */ 'create-user');
@@ -59,7 +53,7 @@ DeleteUserAction('js@thing.com')
 
 ### Creating Stores
 ```javascript
-import {Store} from 'delta';
+import {Store} from 'conveyr';
 
 let UserStore = Store.create('users')
     .fields({
@@ -74,7 +68,7 @@ let UserStore = Store.create('users')
 ### Creating Services
 ```javascript
 import Agent from 'superagent';
-import {Service} from 'delta';
+import {Service} from 'conveyr';
 
 import {CreateUserAction, DeleteUserAction} from './my-actions';
 import {UserStore} from './my-stores';
@@ -126,7 +120,7 @@ Service.create(/* The service  id */ 'create-new-user')
 
 ### Creating Emitters
 ```javascript
-import {Emitter} from 'delta';
+import {Emitter} from 'conveyr';
 
 Emitter.create('window-resize')
     .action('some-action-id' /* or an action instance */)
@@ -169,7 +163,7 @@ export default React.createClass({
 ### Using ES6-Style React Components
 ```javascript
 import React from 'react';
-import {View} from 'delta';
+import {View} from 'conveyr';
 
 import {UserStore} from './my-stores';
 
@@ -202,3 +196,11 @@ export default class SomeComponent extends View {
     }
 }
 ```
+
+## Todos
+- [x] Actions
+- [x] Services
+- [ ] Stores
+- [ ] Views
+- [ ] Emitters
+- [ ] Logging
