@@ -10,30 +10,31 @@ var Mocha       = require('mocha');
 
 /************************** GULP MODULE CONSTANTS ****************************/
 
-var TMP_FOLDER      = '.compiled-tests';
-var LIB_SRC_FOLDER  = 'src';
-var LIB_FOLDER      = 'lib';
+var TEST_FOLDER     = path.join(__dirname, 'test');
+var TEST_TMP_FOLDER = path.join(TEST_FOLDER, '.compiled-tests');
+var SRC_FOLDER      = path.join(__dirname, 'src');
+var LIB_FOLDER      = path.join(__dirname, 'lib');
 
 /************************** GULP MODULE DEFINITION ***************************/
 
 gulp.task('clean', function() {
-    rimraf.sync(path.join(__dirname, TMP_FOLDER));
-    rimraf.sync(path.join(__dirname, LIB_FOLDER));
+    rimraf.sync(TEST_TMP_FOLDER);
+    rimraf.sync(LIB_FOLDER);
 });
 
 gulp.task('compile:lib', function(done) {
-     gulp.src(path.join(__dirname, '..', LIB_SRC_FOLDER, '**', '*'))
+     gulp.src(path.join(SRC_FOLDER, '**', '*.js'))
         .pipe(babel())
-        .pipe(gulp.dest(path.join(__dirname, '..', LIB_FOLDER)))
+        .pipe(gulp.dest(LIB_FOLDER))
         .on('end', function() {
             done();
         });
 });
 
 gulp.task('compile:tests', ['compile:lib'], function(done) {
-     gulp.src(path.join(__dirname, '*.test.js'))
+     gulp.src(path.join(TEST_FOLDER, '*.test.js'))
         .pipe(babel())
-        .pipe(gulp.dest(path.join(__dirname, TMP_FOLDER)))
+        .pipe(gulp.dest(TEST_TMP_FOLDER))
         .on('end', function() {
             done();
         });
@@ -42,7 +43,7 @@ gulp.task('compile:tests', ['compile:lib'], function(done) {
 gulp.task('test', ['compile:tests'], function(done) {
     var mocha = new Mocha();
     // Load the tests from the filesystem
-    fs.readdir(path.join(__dirname, TMP_FOLDER), function(err, files) {
+    fs.readdir(TEST_FOLDER, function(err, files) {
         if (err) {
             done(err);
         } else {
@@ -50,7 +51,7 @@ gulp.task('test', ['compile:tests'], function(done) {
                 return (file.indexOf('.test.js') === (file.length - 8));
             }).forEach(function(testFile, i, testFiles) {
                 // Add the file to mocha context
-                mocha.addFile(path.join(__dirname, TMP_FOLDER, testFile));
+                mocha.addFile(path.join(TEST_TMP_FOLDER, testFile));
                 gutil.log('Found test file:\t', gutil.colors.blue(testFile));
                 // Wait for the last last file to be loaded
                 if (i >= (testFiles.length - 1)) {
@@ -71,4 +72,4 @@ gulp.task('test', ['compile:tests'], function(done) {
     });
 });
 
-gulp.task('default', ['clean', 'test']);
+gulp.task('default', ['clean', 'compile:lib']);

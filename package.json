@@ -1,7 +1,7 @@
 {
   "name": "conveyr",
   "version": "0.0.1",
-  "description": "The simple web application architecture for the rest of us.",
+  "description": "A simple way to build powerful web applications.",
   "main": "lib/index.js",
   "directories": {
     "doc": "docs",
@@ -11,9 +11,17 @@
     "babel": "^5.6.3",
     "eventemitter2": "^0.4.14"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "chai": "^3.0.0",
+    "gulp": "^3.9.0",
+    "gulp-babel": "^5.1.0",
+    "gulp-util": "^3.0.5",
+    "mocha": "^2.2.5",
+    "rimraf": "^2.4.0"
+  },
   "scripts": {
-    "test": "cd ./test; gulp; cd ..;"
+    "test": "./node_modules/gulp/bin/gulp.js clean test",
+    "prepublish": "./node_modules/gulp/bin/gulp.js"
   },
   "repository": {
     "type": "git",
