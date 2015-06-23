@@ -205,34 +205,34 @@ export default class SomeComponent extends View {
 ```
 
 ## Todos
-- [ ] Actions
--   [x] Rewrite documentation
--   [ ] Add `service()`
--   [ ] Add `payload()`
--       [ ] Write a generic argument validator
--       [ ] Add the payload feature
--   [ ] Rewrite tests
-- [ ] Services
--   [ ] Rewrite documentation
--   [ ] Remove `actions()`
--   [ ] Rewrite tests
--   [ ] Write new service-action integration test
-- [ ] Stores
--   [ ] Touch up documentation
--   [ ] Write validators
--   [ ] Finish mutators
--   [ ] Write tests
-- [ ] Views
--   [ ] Rewrite not to use mixins
--   [ ] Touch up the documentation
--   [ ] Write tests
--   [ ] Write full-use-case integration test
-- [ ] Emitters
--   [ ] Write documentation
--   [ ] Add `bind()`
--   [ ] Add `action()`
--   [ ] Write tests
-- [ ] Logging
--   [ ] Write documentation
--   [ ] Add logging endpoints everywhere
--   [ ] Write the `Log` interface
+* [ ] Actions
+    * [x] Rewrite documentation
+    * [ ] Add `service()`
+    * [ ] Add `payload()`
+    * [ ] Write a generic argument validator
+    * [ ] Add the payload feature
+    * [ ] Rewrite tests
+* [ ] Services
+    * [ ] Rewrite documentation
+    * [ ] Remove `actions()`
+    * [ ] Rewrite tests
+    * [ ] Write new service-action integration test
+* [ ] Stores
+    * [ ] Touch up documentation
+    * [ ] Write validators
+    * [ ] Finish mutators
+    * [ ] Write tests
+* [ ] Views
+    * [ ] Rewrite not to use mixins
+    * [ ] Touch up the documentation
+    * [ ] Write tests
+    * [ ] Write full-use-case integration test
+* [ ] Emitters
+    * [ ] Write documentation
+    * [ ] Add `bind()`
+    * [ ] Add `action()`
+    * [ ] Write tests
+* [ ] Logging
+    * [ ] Write documentation
+    * [ ] Add logging endpoints everywhere
+    * [ ] Write the `Log` interface
