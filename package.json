@@ -1,7 +1,7 @@
 {
-  "name": "delta-flux",
+  "name": "conveyr",
   "version": "0.0.1",
-  "description": "A simple Flux implementation for the rest of us.",
+  "description": "The simple web application architecture for the rest of us.",
   "main": "lib/index.js",
   "directories": {
     "doc": "docs",
@@ -17,17 +17,18 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/skeswa/delta.git"
+    "url": "git+https://github.com/skeswa/conveyr.git"
   },
   "keywords": [
     "flux",
-    "delta",
+    "conveyr",
+    "conveyor",
     "react"
   ],
   "author": "Sandile Keswa",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/skeswa/delta/issues"
+    "url": "https://github.com/skeswa/conveyr/issues"
   },
-  "homepage": "https://github.com/skeswa/delta#readme"
+  "homepage": "https://github.com/skeswa/conveyr#readme"
 }
