@@ -2,6 +2,9 @@
 
 /****************************** MODULE IMPORTS *******************************/
 
+import Map from 'core-js/es6/map';
+import Promise from 'core-js/es6/promise';
+
 import {emit, subscribe, unsubscribe, LISTENER_NAMESPACE_SEPARATOR} from './eventbus';
 import {isString, isEmpty} from './typechecker';
 import {

@@ -1,6 +1,3 @@
-// Include the babel polyfill
-require('babel/polyfill');
-
 import {createAction}   from './action';
 import {createService}  from './service';
 import {createStore}    from './store';
