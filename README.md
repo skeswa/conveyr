@@ -44,6 +44,7 @@ export const SomeAction = Action.create('some-action')
 Actions are simply functions and should be treated as such. Actions can be invoked with up to _one argument_. This argument is called the **payload** of the Action, and its format is specified by the `payload()` function (example above). If the payload format is specified, then Conveyr will perform validation on Action invocations to make sure the payload is correct.
 ```javascript
 import {SomeAction} from './my-actions';
+
 // Actions can be invoked just like functions.
 // This would throw an error if either `thing1` or `thing2` was not provided.
 SomeAction({ thing1: [1, 2, 3], thing2: '4' });
@@ -51,6 +52,7 @@ SomeAction({ thing1: [1, 2, 3], thing2: '4' });
 Actions also return a [Promise](http://www.html5rocks.com/en/tutorials/es6/promises) so that you can react according to whether Action invocation was successful or not. Also, keep in mind that Action promises *do not return anything* in the successful case of the promise. This means that the `then()` function of the promise will always be passed zero arguments.
 ```javascript
 import {SomeOtherAction} from './my-actions';
+
 SomeOtherAction('some argument')
     .then(() => console.log('Aw yiss.'))
     .catch(err => console.error('Eeek! It did not work:', err));
@@ -203,9 +205,34 @@ export default class SomeComponent extends View {
 ```
 
 ## Todos
-- [x] Actions
-- [x] Services
+- [ ] Actions
+-   [x] Rewrite documentation
+-   [ ] Add `service()`
+-   [ ] Add `payload()`
+-       [ ] Write a generic argument validator
+-       [ ] Add the payload feature
+-   [ ] Rewrite tests
+- [ ] Services
+-   [ ] Rewrite documentation
+-   [ ] Remove `actions()`
+-   [ ] Rewrite tests
+-   [ ] Write new service-action integration test
 - [ ] Stores
+-   [ ] Touch up documentation
+-   [ ] Write validators
+-   [ ] Finish mutators
+-   [ ] Write tests
 - [ ] Views
+-   [ ] Rewrite not to use mixins
+-   [ ] Touch up the documentation
+-   [ ] Write tests
+-   [ ] Write full-use-case integration test
 - [ ] Emitters
+-   [ ] Write documentation
+-   [ ] Add `bind()`
+-   [ ] Add `action()`
+-   [ ] Write tests
 - [ ] Logging
+-   [ ] Write documentation
+-   [ ] Add logging endpoints everywhere
+-   [ ] Write the `Log` interface
