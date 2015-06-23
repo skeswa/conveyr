@@ -25,7 +25,7 @@ Every application has things like these. For example, consider the case where a 
 
 ## Usage
 ### Creating Actions
-Actions are created with the `Action.create()` function. The `create()` function takes Action Id string as its only argument. The Action Id represents the Action, and, appropriately, it should be unique. The `create()` function returns an **Action**. The `service()` function of an Action specifies the Service that will be called when the Action is invoked. The `payload()` function of an Action Trigger specifies the structure of the data that should be passed to the Action when it is invoked.
+Actions are created with the `Action.create()` function. The `create()` function takes Action Id string as its only argument. The Action Id represents the Action, and, appropriately, it should be unique. The `create()` function returns an **Action**. The `service()` function of an Action specifies the Service that will be called when the Action is invoked. The `payload()` function of an Action specifies the structure of the data that should be passed to the Action when it is invoked.
 ```javascript
 import {Action} from 'conveyr';
 import {SomeService} from './my-services';
