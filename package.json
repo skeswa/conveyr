@@ -1,0 +1,42 @@
+{
+  "name": "conveyr",
+  "version": "0.0.1",
+  "description": "A simple way to build powerful web applications.",
+  "main": "lib/index.js",
+  "directories": {
+    "doc": "docs",
+    "test": "test"
+  },
+  "dependencies": {
+    "babel": "^5.6.3",
+    "eventemitter2": "^0.4.14"
+  },
+  "devDependencies": {
+    "chai": "^3.0.0",
+    "gulp": "^3.9.0",
+    "gulp-babel": "^5.1.0",
+    "gulp-util": "^3.0.5",
+    "mocha": "^2.2.5",
+    "rimraf": "^2.4.0"
+  },
+  "scripts": {
+    "test": "./node_modules/gulp/bin/gulp.js clean test",
+    "prepublish": "./node_modules/gulp/bin/gulp.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/skeswa/conveyr.git"
+  },
+  "keywords": [
+    "flux",
+    "conveyr",
+    "conveyor",
+    "react"
+  ],
+  "author": "Sandile Keswa",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/skeswa/conveyr/issues"
+  },
+  "homepage": "https://github.com/skeswa/conveyr#readme"
+}
