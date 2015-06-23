@@ -22,33 +22,38 @@ Its as simple as that. Thereafter, views can have other responsibility - such as
 
 ## Usage
 ### Creating Actions
+Actions are created with the `Action.create()` function. The `create()` function takes Action Id string as its only argument. The Action Id represents the Action, and, appropriately, it should be unique. The `create()` function returns an **Action**. The `service()` function of an Action specifies the Service that will be called when the Action is invoked. The `payload()` function of an Action Trigger specifies the structure of the data that should be passed to the Action when it is invoked.
 ```javascript
 import {Action} from 'conveyr';
+import {SomeService} from './my-services';
 
-// Actions are simply functions that are created with the "create" method of the Actions object
-let CreateUserAction = Action.create(/* The action id string */ 'create-user');
-
-// You can create as many actions as you want!
-let DeleteUserAction = Action.create('delete-user');
-
-// However, action ids must be unique - so the following would throw an error
-Action.create('create-user'); // Uh-oh
+export const SomeAction = Action.create('some-action')
+    // Either a service id or an actual service is passed to this function
+    .service(SomeService /* or 'some-service-id' instead */)
+    // The payload function can either take a flat object map, or just a type.
+    // (e.g. .payload(Number) or .payload({ type: Number, optional: true }))
+    .payload({
+        thing1: Array,
+        thing2: Number,
+        // Below is an example of a fully-qualified type.
+        // Basic javascript type simply evaluate to { optional: false }
+        thing4: { type: String, default: 'woop', optional: true }
+    });
 ```
-### Invoking Actions
+### Using Actions
+Actions are simply functions and should be treated as such. Actions can be invoked with up to _one argument_. This argument is called the **payload** of the Action, and its format is specified by the `payload()` function (example above). If the payload format is specified, then Conveyr will perform validation on Action invocations to make sure the payload is correct.
 ```javascript
+import {SomeAction} from './my-actions';
 // Actions can be invoked just like functions.
-// However, Actions take *up to one argument*, so use it wisely
-CreateUserAction({ name: 'John Smith', email: 'js@thing.com', age: 20 });
-
-// Actions, when invoked, also return a Promise object so that
-// you can tell whether your action was successful or not.
-// Keep in mind that actions will never return a result, so the
-// `then()` callback will always have no parameters
-DeleteUserAction('js@thing.com')
-    .then(() => {
-        console.log('Woot!');
-    })
-    .catch(err => console.error('Eeek! Could not delete the user:', err));
+// This would throw an error if either `thing1` or `thing2` was not provided.
+SomeAction({ thing1: [1, 2, 3], thing2: '4' });
+```
+Actions also return a [Promise](http://www.html5rocks.com/en/tutorials/es6/promises) so that you can react according to whether Action invocation was successful or not. Also, keep in mind that Action promises *do not return anything* in the successful case of the promise. This means that the `then()` function of the promise will always be passed zero arguments.
+```javascript
+import {SomeOtherAction} from './my-actions';
+SomeOtherAction('some argument')
+    .then(() => console.log('Aw yiss.'))
+    .catch(err => console.error('Eeek! It did not work:', err));
 ```
 
 ### Creating Stores
