@@ -250,3 +250,4 @@ export default class SomeComponent extends View {
     * [ ] Write the `Log` interface
 * [ ] Browserified & Minified distributions
 * [ ] In-browser tests
+* [ ] Bower package deployment
