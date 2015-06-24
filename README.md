@@ -15,7 +15,7 @@ Actions are responsible for triggering Services. Services are responsible with p
 From session information to the results of a search, Stores pass state along to views, and they alone determine what views can render.
 - **Views render data.**  
 Its as simple as that. Thereafter, views can have other responsibility - such as, emitting actions when the user interacts with the application via the browser. Conveyr is built to use React Components as its views.  
-- **Emitters external events into Actions.**   
+- **Emitters turn external events into Actions.**   
 Every application has import interactions that occur without the user causing them. For example, consider the case where a web application must react to the window resizing: an Emitter is how the application would change its state to adapt to this external event.
 
 ## Usage
