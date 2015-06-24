@@ -27,7 +27,7 @@ For example, consider an event that follows a user clicking a button that closes
 Actions are responsible for triggering Services. Services are responsible with permuting application stateREST APIs & Websocket Connections are good examples of resources that a Service would interact with.  interact interact with external resources, and changes in application state that result from these interactions are propagated to Stores.
 - **Stores manage _all_ of your application's state.**  
 From session information to the results of a search, Stores pass state along to views, and they alone determine what views can render.
-- **Views render data.**  
+- **Views present application data to the user.**  
 Its as simple as that. Thereafter, views can have other responsibility - such as, emitting actions when the user interacts with the application via the browser. Conveyr is built to use React Components as its views.  
 - **Emitters turn external events into Actions.**   
 Every application has important interactions that occur without the user causing them. For instance, consider the case where a web application must react to the window resizing: the application needs to bind a behavior to that event to resize and redaw itself. Emitters are how Conveyr-based applications adapt to external events like these.
