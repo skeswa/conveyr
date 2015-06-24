@@ -30,7 +30,7 @@ From session information to the results of a search, Stores pass state along to 
 - **Views render data.**  
 Its as simple as that. Thereafter, views can have other responsibility - such as, emitting actions when the user interacts with the application via the browser. Conveyr is built to use React Components as its views.  
 - **Emitters turn external events into Actions.**   
-Every application has import interactions that occur without the user causing them. For example, consider the case where a web application must react to the window resizing: an Emitter is how the application would change its state to adapt to this external event.
+Every application has important interactions that occur without the user causing them. For instance, consider the case where a web application must react to the window resizing: the application needs to bind a behavior to that event to resize and redaw itself. Emitters are how Conveyr-based applications adapt to external events like these.
 
 ## Usage
 ### Creating Actions
