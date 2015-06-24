@@ -2,6 +2,8 @@
 
 /****************************** MODULE IMPORTS *******************************/
 
+import Map from 'core-js/es6/map';
+
 import {emit, LISTENER_NAMESPACE_SEPARATOR} from './eventbus';
 import {isString, isEmpty} from './typechecker';
 import {

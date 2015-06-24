@@ -1,4 +1,4 @@
-# Conveyr [![NPM Badge](https://img.shields.io/badge/npm-v0.0.1-blue.svg)](https://www.npmjs.com/package/conveyr)
+# Conveyr [![NPM Badge](https://img.shields.io/badge/npm-v0.0.1-blue.svg)](https://www.npmjs.com/package/conveyr) ![Travis Badge](https://travis-ci.org/skeswa/conveyr.svg?branch=develop) ![Usability Badge](https://img.shields.io/badge/ready%20for%20use%3F-not%20a%20chance-red.svg)
 Conveyr uses the best parts of Facebook's [Flux](https://facebook.github.io/flux/) architecture to make building modern web applications with [React](https://facebook.github.io/react/) simple.  
 
 Conveyr provides tools that create a **unidirectional data flow**. This means that all changes in your application state follow a _predictable_ lifecycle. Ultimately, the advantage of this architecture is its ability to make even the most complicated web applications easy to follow. For more on the unidirectional data flow pattern, watch [this video](https://youtu.be/nYkdrAPrdcw?list=PLb0IAmt7-GS188xDYE-u1ShQmFFGbrk0v).
@@ -17,12 +17,15 @@ Actions are responsible for triggering Services. Services are responsible with p
 Stores manage **all** of your application's state.  
 From session information to the results of a search, Stores pass state along to views, and they alone determine what views can render.
 - **Views**  
-Fundametally, views render data.  
+Views render data.  
 Its as simple as that. Thereafter, views can have other responsibility - such as, emitting actions when the user interacts with the application via the browser. Conveyr is built to use React Components as its views.  
+- **Emitters**  
+Emitters create Actions outside user interaction.  
+Every application has things like these. For example, consider the case where a web application must react to the window resizing: an Emitter is how the application would change its state to adapt to this external event.
 
 ## Usage
 ### Creating Actions
-Actions are created with the `Action.create()` function. The `create()` function takes Action Id string as its only argument. The Action Id represents the Action, and, appropriately, it should be unique. The `create()` function returns an **Action**. The `service()` function of an Action specifies the Service that will be called when the Action is invoked. The `payload()` function of an Action Trigger specifies the structure of the data that should be passed to the Action when it is invoked.
+Actions are created with the `Action.create()` function. The `create()` function takes Action Id string as its only argument. The Action Id represents the Action, and, appropriately, it should be unique. The `create()` function returns an **Action**. The `service()` function of an Action specifies the Service that will be called when the Action is invoked. The `payload()` function of an Action specifies the structure of the data that should be passed to the Action when it is invoked.
 ```javascript
 import {Action} from 'conveyr';
 import {SomeService} from './my-services';
