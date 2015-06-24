@@ -1,5 +1,9 @@
 # Conveyr
-[![NPM Badge](https://img.shields.io/badge/npm-v0.0.1-blue.svg)](https://www.npmjs.com/package/conveyr) ![Travis Badge](https://travis-ci.org/skeswa/conveyr.svg?branch=develop) ![Usability Badge](https://img.shields.io/badge/ready%20for%20use%3F-not%20a%20chance-red.svg)  
+[![NPM Badge](http://img.shields.io/npm/v/conveyr.svg)](https://www.npmjs.com/package/conveyr)
+![Travis Badge](https://travis-ci.org/skeswa/conveyr.svg?branch=develop)
+![Dependencies Badge](https://david-dm.org/skeswa/conveyr.svg)
+![Usability Badge](https://img.shields.io/badge/ready%20for%20use%3F-not%20a%20chance-red.svg)  
+
 Conveyr uses the best parts of Facebook's [Flux](https://facebook.github.io/flux/) architecture to make building modern web applications with [React](https://facebook.github.io/react/) simple.  
 
 ## Install
