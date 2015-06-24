@@ -9,7 +9,7 @@ Conveyr uses the best parts of Facebook's [Flux](https://facebook.github.io/flux
 
 Conveyr provides tools that create a **unidirectional data flow**. This means that all changes in your application state follow a _predictable_ lifecycle. Ultimately, the advantage of this architecture is its ability to make even the most complicated web applications easy to follow. For more on the unidirectional data flow pattern, watch [this video](https://youtu.be/nYkdrAPrdcw?list=PLb0IAmt7-GS188xDYE-u1ShQmFFGbrk0v).
 
-## Install
+## Installation
 
 Conveyr is primarily intended for [Browserify-based](http://browserify.org/) web applications. So, you should install it using [NPM](https://www.npmjs.com/):
 ```
