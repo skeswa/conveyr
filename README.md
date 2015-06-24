@@ -7,21 +7,16 @@ Conveyr provides tools that create a **unidirectional data flow**. This means th
 
 ![Diagram](https://raw.github.com/skeswa/conveyr/master/docs/diagram.jpg)  
 
-- **Actions**  
-Actions are events that describe their consequences.  
+- **Actions are events that describe their consequences.**  
 For example, consider an event that follows a user clicking a button that closes a window. An ordinary event emitted after this event could be called `close-button-clicked`. However, if instead we used an Action, it might be called `close-window`. Observe how actions describe intent while typical events do not.
-- **Services**  
-Services change your application state.  
+- **Services change your application state.**  
 Actions are responsible for triggering Services. Services are responsible with permuting application stateREST APIs & Websocket Connections are good examples of resources that a Service would interact with.  interact interact with external resources, and changes in application state that result from these interactions are propagated to Stores.
-- **Stores**  
-Stores manage **all** of your application's state.  
+- **Stores manage _all_ of your application's state.**  
 From session information to the results of a search, Stores pass state along to views, and they alone determine what views can render.
-- **Views**  
-Views render data.  
+- **Views render data.**  
 Its as simple as that. Thereafter, views can have other responsibility - such as, emitting actions when the user interacts with the application via the browser. Conveyr is built to use React Components as its views.  
-- **Emitters**  
-Emitters create Actions outside user interaction.  
-Every application has things like these. For example, consider the case where a web application must react to the window resizing: an Emitter is how the application would change its state to adapt to this external event.
+- **Emitters external events into Actions.**   
+Every application has import interactions that occur without the user causing them. For example, consider the case where a web application must react to the window resizing: an Emitter is how the application would change its state to adapt to this external event.
 
 ## Usage
 ### Creating Actions
