@@ -248,3 +248,5 @@ export default class SomeComponent extends View {
     * [ ] Write documentation
     * [ ] Add logging endpoints everywhere
     * [ ] Write the `Log` interface
+* [ ] Browserified & Minified distributions
+* [ ] In-browser tests
