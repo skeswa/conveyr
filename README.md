@@ -1,4 +1,5 @@
 # Conveyr
+
 [![NPM Badge](http://img.shields.io/npm/v/conveyr.svg)](https://www.npmjs.com/package/conveyr)
 ![Travis Badge](https://travis-ci.org/skeswa/conveyr.svg?branch=develop)
 ![Dependencies Badge](https://david-dm.org/skeswa/conveyr.svg)
@@ -7,7 +8,8 @@
 Conveyr uses the best parts of Facebook's [Flux](https://facebook.github.io/flux/) architecture to make building modern web applications with [React](https://facebook.github.io/react/) simple.  
 
 ## Install
-Conveyr is primarily intended for [Browserify-based](http://browserify.org/) web applications. So, you should install it using [NPM](npmjs.com/):
+
+Conveyr is primarily intended for [Browserify-based](http://browserify.org/) web applications. So, you should install it using [NPM](https://www.npmjs.com/):
 ```
 npm i --save conveyr
 ```
