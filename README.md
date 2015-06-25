@@ -19,15 +19,19 @@ Conveyr is primarily intended for [Browserify-based](http://browserify.org/) web
 
 ![Diagram](https://raw.github.com/skeswa/conveyr/master/docs/diagram.jpg)  
 
-- **Actions are events that describe behavior.**  
-For example, consider an event that follows a user clicking a button that closes a window. An ordinary event emitted after this event could be called `close-button-clicked`. However, if instead we used an Action, it might be called `close-window`. Observe how actions describe behavior while typical events do not.
-- **Services change your application state.**  
-Actions are responsible for triggering Services. Services are responsible with permuting application stateREST APIs & Websocket Connections are good examples of resources that a Service would interact with.  interact interact with external resources, and changes in application state that result from these interactions are propagated to Stores.
-- **Stores manage _all_ of your application's state.**  
-From session information to the results of a search, Stores pass state along to views, and they alone determine what views can render.
-- **Views present application data to the user.**  
-Its as simple as that. By binding to Stores, Views can re-render themselves whenever application state changes. The simplicity of this paradigm makes application-wide UI changes a cinch. Furthermore, Views often create Actions based on user interactions.
-- **Emitters turn external events into Actions.**   
+**Actions are events that describe behavior.**  
+For example, consider an event that follows a user clicking a button that closes a window. An ordinary event emitted after this event could be called `close-button-clicked`. However, if instead we used an Action, it might be called `close-window`. Observe how actions describe behavior while typical events do not.  
+
+**Services change your application state.**  
+Actions are responsible for triggering Services. Services are responsible with permuting application stateREST APIs & Websocket Connections are good examples of resources that a Service would interact with.  interact interact with external resources, and changes in application state that result from these interactions are propagated to Stores.  
+
+**Stores manage _all_ of your application's state.**  
+From session information to the results of a search, Stores pass state along to views, and they alone determine what views can render.  
+
+**Views present application data to the user.**  
+Its as simple as that. By binding to Stores, Views can re-render themselves whenever application state changes. The simplicity of this paradigm makes application-wide UI changes a cinch. Furthermore, Views often create Actions based on user interactions.  
+
+**Emitters turn external events into Actions.**   
 Every application has important interactions that occur without the user causing them. For instance, consider the case where a web application must react to the window resizing: the application needs to bind a behavior to that event to resize and redaw itself. Emitters are how Conveyr-based applications adapt to external events like these.
 
 ## Actions
