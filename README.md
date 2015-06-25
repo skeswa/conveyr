@@ -15,7 +15,7 @@ npm i --save conveyr
 ```
 Conveyr is primarily intended for [Browserify-based](http://browserify.org/) web applications, so, you should use the [node package manager](https://www.npmjs.com/) to install it. In future, a distribution of the library will be made available for more canonical web application structures using the [Bower](http://bower.io/) package manager.
 
-## Structure
+## Overview
 
 ![Diagram](https://raw.github.com/skeswa/conveyr/master/docs/diagram.jpg)  
 
