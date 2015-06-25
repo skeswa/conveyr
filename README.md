@@ -228,38 +228,36 @@ export default class SomeComponent extends View {
 ```
 
 ## Todos
-* [ ] Actions
+* [x] Actions
     * [x] Rewrite documentation
     * [x] Add `service()`
     * [x] Add `payload()`
     * [x] Write a generic argument validator
     * [x] Add the payload feature
-    * [ ] Rewrite tests
-* [ ] Replace event emitter with direct invocation
+    * [x] Rewrite tests
+* [x] Replace event emitter with direct invocation
 * [ ] Services
     * [ ] Rewrite documentation
     * [x] Remove `actions()`
-    * [ ] Rewrite tests
-    * [ ] Write new service-action integration test
+    * [x] Rewrite tests
+    * [ ] Write service-action integration test
 * [ ] Stores
     * [ ] Touch up documentation
     * [ ] Write validators
     * [ ] Finish mutators
     * [ ] Write tests
+    * [ ] Write service-store integration test
 * [ ] Views
     * [ ] Rewrite not to use mixins
     * [ ] Touch up the documentation
     * [ ] Write tests
     * [ ] Write full-use-case integration test
-* [ ] Emitters
-    * [ ] Write documentation
-    * [ ] Add `bind()`
-    * [ ] Add `action()`
-    * [ ] Write tests
-* [ ] Logging
-    * [ ] Write documentation
+* [x] Emitters
+    * [x] Write documentation
+* [ ] Configuration
+    * [ ] Add documentation for `.configure({ ... })`
     * [ ] Add logging endpoints everywhere
-    * [ ] Write the `Log` interface
+    * [ ] Add log levels
 * [ ] Browserified & Minified distributions
 * [ ] In-browser tests
-* [ ] Bower package deployment
+* [ ] Bower package
