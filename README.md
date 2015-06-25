@@ -219,14 +219,14 @@ export default class SomeComponent extends View {
 ## Todos
 * [ ] Actions
     * [x] Rewrite documentation
-    * [ ] Add `service()`
-    * [ ] Add `payload()`
-    * [ ] Write a generic argument validator
-    * [ ] Add the payload feature
+    * [x] Add `service()`
+    * [x] Add `payload()`
+    * [x] Write a generic argument validator
+    * [x] Add the payload feature
     * [ ] Rewrite tests
 * [ ] Services
     * [ ] Rewrite documentation
-    * [ ] Remove `actions()`
+    * [x] Remove `actions()`
     * [ ] Rewrite tests
     * [ ] Write new service-action integration test
 * [ ] Stores
