@@ -224,6 +224,7 @@ export default class SomeComponent extends View {
     * [x] Write a generic argument validator
     * [x] Add the payload feature
     * [ ] Rewrite tests
+* [ ] Replace event emitter with direct invocation
 * [ ] Services
     * [ ] Rewrite documentation
     * [x] Remove `actions()`
