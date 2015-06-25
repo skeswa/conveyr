@@ -46,8 +46,8 @@ export const SomeAction = Action('some-action')
         thing1: Array,
         thing2: Number,
         // Below is an example of a fully-qualified type.
-        // Fields of fully-qualified types are considered *optional* they have defaults.
-        // Otherwise, all fields default to being required
+        // Fields of fully-qualified types are considered *optional* if 
+        // they have defaults. Otherwise, all fields default to being required
         thing3: { type: String, default: 'woop' }
     });
 ```
