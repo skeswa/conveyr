@@ -5,7 +5,7 @@
 import Map from 'core-js/es6/map';
 
 import {emit, subscribe, unsubscribe, LISTENER_NAMESPACE_SEPARATOR} from './eventbus';
-import {isString, isEmpty, isFunction} from './typechecker';
+import {isString, isEmpty, isFunction} from './type';
 import {
     InvalidParameterTypeError,
     EmptyParameterError,
@@ -22,7 +22,7 @@ import {isStoreId, getStore, generateMutatorContext, isStore} from './store';
 /***************************** MODULE CONSTANTS ******************************/
 
 const ES5_FUNCTION_ARG_REGEX    = /^function\s*[^\(]*\(\s*([^\)]*)\)/m;
-const ALL_SPACE_REGEX          = / /g;
+const ALL_SPACE_REGEX           = / /g;
 
 /******************************* MODULE STATE ********************************/
 
@@ -295,4 +295,8 @@ export function isServiceId(serviceId) {
 
 export function isService(service) {
     return service instanceof Service;
+}
+
+export function getService(serviceId) {
+    return serviceMap.get(serviceId);
 }

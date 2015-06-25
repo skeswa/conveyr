@@ -1,6 +1,6 @@
 import {assert} from 'chai';
 
-import {Action} from '../../lib/index';
+import {Action, Service} from '../../lib/index';
 import {once, emit} from '../../lib/eventbus';
 
 describe('Action.create(...)', () => {
@@ -19,6 +19,124 @@ describe('Action.create(...)', () => {
     it('returns a trigger function', () => {
         const testAction2 = Action.create('test-action-2');
         assert.isFunction(testAction2);
+        assert.isFunction(testAction2.service);
+        assert.isFunction(testAction2.payload);
+    });
+});
+
+describe('Action.service(...)', () => {
+    it('exists', () => {
+        const serviceTestAction0 = Action.create('service-test-action-0');
+        assert.isFunction(serviceTestAction0.service);
+    });
+
+    it('has validation', () => {
+        const serviceTestAction1 = Action.create('service-test-action-1');
+        const serviceTestService1 = Service.create('service-test-service-1');
+
+        assert.throw(() => serviceTestAction1.service('asd'), undefined, undefined, 'service() should fail for nonexistent services');
+        assert.throw(() => serviceTestAction1.service({}), undefined, undefined, 'service() should fail for nonexistent services');
+        assert.doesNotThrow(() => serviceTestAction1.service(serviceTestService1), undefined, undefined, 'service() should succeed for legit services');
+    });
+
+    it('takes both serviceIds and services', () => {
+        const serviceTestAction2 = Action.create('service-test-action-2');
+        const serviceTestService2 = Service.create('service-test-service-2');
+
+        assert.doesNotThrow(() => serviceTestAction2.service('service-test-service-2'), undefined, undefined, 'service() should not fail for real service ids');
+        assert.doesNotThrow(() => serviceTestAction2.service(serviceTestService2), undefined, undefined, 'service() should not fail for real services');
+    });
+});
+
+describe('Action.payload(...)', () => {
+    it('exists', () => {
+        const payloadTestAction0 = Action.create('payload-test-action-0');
+        assert.isFunction(payloadTestAction0.payload);
+    });
+
+    it('has adequate validation', () => {
+        const payloadTestAction1 = Action.create('payload-test-action-1');
+
+        assert.throw(() => payloadTestAction1.payload(1), undefined, undefined, 'payload should fail for regular values');
+        assert.throw(() => payloadTestAction1.payload('asd'), undefined, undefined, 'payload should fail for regular values');
+        assert.throw(() => payloadTestAction1.payload(true), undefined, undefined, 'payload should fail for regular values');
+        assert.throw(() => payloadTestAction1.payload({}), undefined, undefined, 'payload should fail for regular values');
+        assert.throw(() => payloadTestAction1.payload([]), undefined, undefined, 'payload should fail for regular values');
+
+        assert.doesNotThrow(() => payloadTestAction1.payload(Array), undefined, undefined, 'payload should fail for native types');
+        assert.doesNotThrow(() => payloadTestAction1.payload(Object), undefined, undefined, 'payload should fail for native types');
+        assert.doesNotThrow(() => payloadTestAction1.payload(Function), undefined, undefined, 'payload should fail for native types');
+        assert.doesNotThrow(() => payloadTestAction1.payload(String), undefined, undefined, 'payload should fail for native types');
+        assert.doesNotThrow(() => payloadTestAction1.payload(Number), undefined, undefined, 'payload should fail for native types');
+        assert.doesNotThrow(() => payloadTestAction1.payload(Boolean), undefined, undefined, 'payload should fail for native types');
+
+        assert.doesNotThrow(() => payloadTestAction1.payload({
+            type: Boolean
+        }), undefined, undefined, 'payload should not fail for valid field maps even if they look like fully qualified types');
+        assert.throw(() => payloadTestAction1.payload({
+            type: Boolean,
+            default: false
+        }), undefined, undefined, 'payload should fail for invalid field maps even if they look like fully qualified types');
+
+        assert.doesNotThrow(() => payloadTestAction1.payload({
+            thing1: Array,
+            thing2: Object,
+            thing3: Function,
+            thing4: String,
+            thing5: Number,
+            thing6: Boolean
+        }), undefined, undefined, 'payload should work for basic field maps');
+        assert.doesNotThrow(() => payloadTestAction1.payload({
+            thing1: Array,
+            thing2: Object,
+            thing3: Function,
+            thing4: String,
+            thing5: Number,
+            thing6: Boolean,
+            thing7: { type: Array },
+            thing8: { type: Array, default: [1, 2] },
+            thing9: { type: Object },
+            thing10: { type: Object, default: { woops: 'woops' } },
+            thing11: { type: Function },
+            thing12: { type: Function, default: x => !!x },
+            thing13: { type: String },
+            thing14: { type: String, default: 'als;dj' },
+            thing15: { type: Number },
+            thing16: { type: Number, default: 0 },
+            thing17: { type: Boolean },
+            thing18: { type: Boolean, default: true }
+        }), undefined, undefined, 'payload should work for field maps with valid fully qualified types');
+        assert.throw(() => payloadTestAction1.payload({
+            thing8: { type: null, default: [1, 2] }
+        }), undefined, undefined, 'payload should fail for field maps with invalid fully qualified types');
+        assert.throw(() => payloadTestAction1.payload({
+            thing8: { type: Array, default: 6 },
+            thing9: { type: Object, default: 'cc' },
+        }), undefined, undefined, 'payload should fail for field maps with invalid fully qualified types');
+        assert.throw(() => payloadTestAction1.payload({
+            thing1: Array,
+            thing2: 0,
+            thing3: Function,
+            thing4: String,
+            thing5: null,
+            thing6: undefined,
+            thing7: { type: Array },
+            thing8: { type: Array, default: [1, 2] },
+            thing9: { type: Object },
+            thing10: { type: Object, default: { woops: 'woops' } },
+            thing11: { type: Function },
+            thing12: { type: Function, default: x => !!x },
+            thing13: { type: String },
+            thing14: { type: String, default: 'als;dj' },
+            thing15: { type: Number },
+            thing16: { type: Number, default: 0 },
+            thing17: { type: Boolean },
+            thing18: { type: Boolean, default: 0 }
+        }), undefined, undefined, 'payload should fail for field maps with invalid basic types');
+    });
+
+    it('evaluates to the correct field map', () => {
+        // TODO (Sandile): do this man
     });
 });
 
