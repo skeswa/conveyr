@@ -17,7 +17,7 @@ npm i --save conveyr
 ```
 However, in future, a distribution of the library will be made available for more canonical web application structures using the [Bower](http://bower.io/) package manager.
 
-## Anatomy
+## Structure
 
 ![Diagram](https://raw.github.com/skeswa/conveyr/master/docs/diagram.jpg)  
 
@@ -32,7 +32,7 @@ Its as simple as that. By binding to Stores, Views can re-render themselves when
 - **Emitters turn external events into Actions.**   
 Every application has important interactions that occur without the user causing them. For instance, consider the case where a web application must react to the window resizing: the application needs to bind a behavior to that event to resize and redaw itself. Emitters are how Conveyr-based applications adapt to external events like these.
 
-## Usage
+## Actions
 ### Creating Actions
 Actions are created with the `Action()` function. The `Action()` function takes Action Id string as its only argument. Action Ids represents Actions, and, appropriately, should be unique. The `Action()` function returns an **Action**. The `calls()` function of an Action specifies the Service that will be called when the Action is invoked. The `sends()` function of an Action specifies the structure of the data that should be passed to the Action when it is invoked.
 ```javascript
@@ -72,6 +72,7 @@ SomeOtherAction('some argument')
     .catch(err => console.error('Eeek! It did not work:', err));
 ```
 
+## Stores
 ### Creating Stores
 ```javascript
 import {Store} from 'conveyr';
@@ -85,7 +86,10 @@ export const SomeStore = Store('some-store').includes({
     someObjectField:    Object
 });
 ```
+### Using Stores
+TODO(Sandile): add store documentation _in general_
 
+## Services
 ### Creating Services
 ```javascript
 import {Service} from 'conveyr';
@@ -144,7 +148,14 @@ export const SomeService = Service('some-service')
         });
 ```
 
-### Creating Emitters
+## Views
+### Why No Mixin?
+Reasons.
+TODO (Sandile): brief explanation + link to react blog
+### Inegrating with Stores
+TODO (Sandile): basic examples of binding/unbinding + a basic "rendering with stores" example
+
+## Emitters
 Emitters have specifically been excluded from the Conveyor library because they are so simple to implement. All an Emitter truly needs to do is fire Actions when certain events occur. Take for example an Emitter that handles window resize events:
 ```javascript
 import {SomeWindowResizeAction} from './my-actions';
@@ -161,71 +172,6 @@ if (window.attachEvent) {
 }
 ```
 As you can see above, nobody _really_ needs any help adding Emitters to their application. However, people need help with their browser choices ;-D.
-
-### Using Traditional React Components
-```javascript
-import React from 'react';
-
-import {UserStore} from './my-stores';
-
-export default React.createClass({
-    mixins: [
-        UserStore.field('someField').mixin(),           // Adds "someField" to the "this.fields" map
-        UserStore.field('someOtherField').mixin('meep') // Adds "meep" to the "this.fields" map, but "meep" maps
-                                                        // to UserStore.someOtherField's value
-    ],
-    
-    getInitialState() {
-        return {
-            someValue: 1,
-            someOtherValue: 2
-        };
-    },
-    
-    render() {
-        return (
-            <div>Store-bound values are {this.fields.someField} and {this.fields.meep}</div>
-        );
-    }
-});
-```
-
-### Using ES6-Style React Components
-```javascript
-import React from 'react';
-import {View} from 'conveyr';
-
-import {UserStore} from './my-stores';
-
-// View is a sub-class of React.Component
-export default class SomeComponent extends View {
-    constructor() {
-        // The initial state of this component
-        this.state = {
-            someValue: 1,
-            someOtherValue: 2
-        };
-        // The store fields of this component
-        this.fields = {
-            someField: UserStore.field('someField'),
-            meep: UserStore.field('someOtherField').mixin('meep')
-        };
-    },
-    
-    getInitialState() {
-        return {
-            someValue: 1,
-            someOtherValue: 2
-        };
-    },
-    
-    render() {
-        return (
-            <div>Store-bound values are {this.fields.someField} and {this.fields.meep}</div>
-        );
-    }
-}
-```
 
 ## Todos
 * [x] Actions
