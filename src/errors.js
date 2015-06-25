@@ -81,3 +81,10 @@ export function ActionPayloadValidationError(fieldName, correctType) {
         `In order to match, this field must be of type ${correctType}.`
     );
 }
+
+export function ActionInvocationWithoutServiceError(actionId) {
+    return new Error(
+        `Could not invoke Action with id "${actionId}" because it is not bound to a Service. ` +
+        `Actions must be bound to Services in order to function as intended.`
+    );
+}

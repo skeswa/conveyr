@@ -2,14 +2,6 @@ import {createAction}   from './action';
 import {createService}  from './service';
 import {createStore}    from './store';
 
-export const Action = {
-    create: createAction
-};
-
-export const Service = {
-    create: createService
-};
-
-export const Store = {
-    create: createStore
-};
+export const Action     = createAction;
+export const Service    = createService;
+export const Store      = createStore;

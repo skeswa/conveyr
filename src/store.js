@@ -4,12 +4,10 @@
 
 import Map from 'core-js/es6/map';
 
-import {emit, LISTENER_NAMESPACE_SEPARATOR} from './eventbus';
 import {isString, isEmpty} from './type';
 import {
     InvalidParameterTypeError,
     EmptyParameterError,
-    IllegalIdError,
     IdAlreadyExistsError
 } from './errors';
 
@@ -60,7 +58,6 @@ export function createStore(storeId) {
     // Validation
     if (!isString(storeId)) throw InvalidParameterTypeError('storeId', 'String');
     if (isEmpty(storeId)) throw EmptyParameterError('storeId');
-    if (storeId.indexOf(LISTENER_NAMESPACE_SEPARATOR) !== -1) throw IllegalIdError('storeId');
     if (storeMap.has(storeId)) throw IdAlreadyExistsError(storeId);
     // Create the new store
     const store = new Store(storeId);
