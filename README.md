@@ -77,7 +77,7 @@ SomeOtherAction('some argument')
 import {Store} from 'conveyr';
 
 // TODO (Sandile): better wording on this
-export const UserStore = Store('users').includes({
+export const SomeStore = Store('some-store').includes({
     someNumberField:    Number,
     someStringField:    { type: String, default: 'stuff' },
     someArrayField:     Array,
@@ -92,7 +92,7 @@ import {Service} from 'conveyr';
 
 import {SomeStore} from './my-stores';
 
-Service('backend-tickler')
+export const SomeService = Service('some-service')
     // Service are the only parts of the application that can make changes
     // to Stores. This `mutates()` function takes the list of stores or store ids
     // that this endpoint has permission to mutate.
