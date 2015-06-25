@@ -34,22 +34,23 @@ Every application has important interactions that occur without the user causing
 
 ## Usage
 ### Creating Actions
-Actions are created with the `Action.create()` function. The `create()` function takes Action Id string as its only argument. The Action Id represents the Action, and, appropriately, it should be unique. The `create()` function returns an **Action**. The `service()` function of an Action specifies the Service that will be called when the Action is invoked. The `payload()` function of an Action specifies the structure of the data that should be passed to the Action when it is invoked.
+Actions are created with the `Action()` function. The `Action()` function takes Action Id string as its only argument. Action Ids represents Actions, and, appropriately, should be unique. The `Action()` function returns an **Action**. The `calls()` function of an Action specifies the Service that will be called when the Action is invoked. The `sends()` function of an Action specifies the structure of the data that should be passed to the Action when it is invoked.
 ```javascript
 import {Action} from 'conveyr';
 import {SomeService} from './my-services';
 
-export const SomeAction = Action.create('some-action')
+export const SomeAction = Action('some-action')
     // Either a service id or an actual service is passed to this function
-    .service(SomeService /* or 'some-service-id' instead */)
+    .calls(SomeService /* or 'some-service-id' instead */)
     // The payload function can either take a flat object map, or just a type.
-    // (e.g. .payload(Number) or .payload({ type: Number, optional: true }))
-    .payload({
+    // (e.g. .sends(Number) or .sends({ type: Number, default: 3 }))
+    .sends({
         thing1: Array,
         thing2: Number,
         // Below is an example of a fully-qualified type.
-        // Basic javascript type simply evaluate to { optional: false }
-        thing4: { type: String, default: 'woop', optional: true }
+        // Fields of fully-qualified types are considered *optional* they have defaults.
+        // Otherwise, all fields default to being required
+        thing3: { type: String, default: 'woop' }
     });
 ```
 ### Using Actions
@@ -58,7 +59,8 @@ Actions are simply functions and should be treated as such. Actions can be invok
 import {SomeAction} from './my-actions';
 
 // Actions can be invoked just like functions.
-// This would throw an error if either `thing1` or `thing2` was not provided.
+// This would throw an error if either `thing1` or `thing2` was not provided
+// since the "thing3" field has a default.
 SomeAction({ thing1: [1, 2, 3], thing2: '4' });
 ```
 Actions also return a [Promise](http://www.html5rocks.com/en/tutorials/es6/promises) so that you can react according to whether Action invocation was successful or not. Also, keep in mind that Action promises *do not return anything* in the successful case of the promise. This means that the `then()` function of the promise will always be passed zero arguments.
@@ -74,36 +76,29 @@ SomeOtherAction('some argument')
 ```javascript
 import {Store} from 'conveyr';
 
-let UserStore = Store.create('users')
-    .fields({
-        someNumberField:    Number,
-        someStringField:    { type: String, default: 'stuff' },
-        someArrayField:     Array,
-        someBooleanField:   { type: Boolean, default: false },
-        someObjectField:    Object
-    });
+// TODO (Sandile): better wording on this
+export const SomeStore = Store('some-store').includes({
+    someNumberField:    Number,
+    someStringField:    { type: String, default: 'stuff' },
+    someArrayField:     Array,
+    someBooleanField:   { type: Boolean, default: false },
+    someObjectField:    Object
+});
 ```
 
 ### Creating Services
 ```javascript
-import Agent from 'superagent';
 import {Service} from 'conveyr';
 
-import {CreateUserAction, DeleteUserAction} from './my-actions';
-import {UserStore} from './my-stores';
+import {SomeStore} from './my-stores';
 
-Service.create(/* The service  id */ 'create-new-user')
-    // These actions are the triggers that cause this service to be invoked. 
-    // The `actions(...)` function takes the list of actions or action ids.
-    // (Also, the `action(...)` function can also be used for single actions)
-    .actions(CreateUserAction, 'create-user')
+export const SomeService = Service('some-service')
     // Service are the only parts of the application that can make changes
-    // to Stores. This `stores(...)` function takes the list of stores or store ids
+    // to Stores. This `mutates()` function takes the list of stores or store ids
     // that this endpoint has permission to mutate.
-    // (Also, the `store(...)` function can also be used for single stores)
-    .stores(UserStore, 'some-other-store')
+    .updates(SomeStore, 'some-other-store')
     // The handler is the function that performs all of the endpoint's logic
-    .handler(
+    .invokes(
         function(
             context,    // Reference that gives this service handler the ability
                         // to mutate the stores it declared as related
@@ -112,6 +107,18 @@ Service.create(/* The service  id */ 'create-new-user')
             done        // The error-first callback that indicates whether the handled
                         // was able to execute successfully
         ) {
+            tickleTheBackend((response) => {
+                if (response.successful) {
+                    // The "context" variable enables mutation of the store's fields
+                    SomeStore.field('some-field').update(context, (currentUsers) => {
+                        return currentUsers.concat(res.body);
+                    });
+                    // Signals that this service has finished executing
+                    done();
+                } else {
+                    done(response.problem);
+                }
+            });
             // Submit our request
             Agent.post('/users')
                 .send(payload)
@@ -138,18 +145,22 @@ Service.create(/* The service  id */ 'create-new-user')
 ```
 
 ### Creating Emitters
+Emitters have specifically been excluded from the Conveyor library because they are so simple to implement. All an Emitter truly needs to do is fire Actions when certain events occur. Take for example an Emitter that handles window resize events:
 ```javascript
-import {Emitter} from 'conveyr';
+import {SomeWindowResizeAction} from './my-actions';
 
-Emitter.create('window-resize')
-    .action('some-action-id' /* or an action instance */)
-    .bind((trigger) => {
-        window.addEventListener('resize', trigger, false);
-    })
-    .unbind((trigger) => {
-        window.removeEventListener('resize', trigger, false);
-    })
+if (window.attachEvent) {
+    window.attachEvent('onresize', SomeWindowResizeAction);
+} else if (window.addEventListener) {
+    window.addEventListener('resize', SomeWindowResizeAction, true);
+} else {
+    // The browser does not support Javascript event binding
+    alert('Uh, dude, we\'re going to get you a better browser');
+    // Save this peculiar user from him/herself
+    window.location.href = 'https://www.mozilla.org/en-US/firefox/new/';
+}
 ```
+As you can see above, nobody _really_ needs any help adding Emitters to their application. However, people need help with their browser choices ;-D.
 
 ### Using Traditional React Components
 ```javascript
@@ -224,6 +235,7 @@ export default class SomeComponent extends View {
     * [x] Write a generic argument validator
     * [x] Add the payload feature
     * [ ] Rewrite tests
+* [ ] Replace event emitter with direct invocation
 * [ ] Services
     * [ ] Rewrite documentation
     * [x] Remove `actions()`
