@@ -144,7 +144,7 @@ export const SomeService = Service('some-service')
         });
 ```
 
-### Using Emitters
+### Creating Emitters
 Emitters have specifically been excluded from the Conveyor library because they are so simple to implement. All an Emitter truly needs to do is fire Actions when certain events occur. Take for example an Emitter that handles window resize events:
 ```javascript
 import {SomeWindowResizeAction} from './my-actions';
