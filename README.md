@@ -1,27 +1,36 @@
-# Conveyr [![NPM Badge](https://img.shields.io/badge/npm-v0.0.1-blue.svg)](https://www.npmjs.com/package/conveyr) ![Travis Badge](https://travis-ci.org/skeswa/conveyr.svg?branch=develop) ![Usability Badge](https://img.shields.io/badge/ready%20for%20use%3F-not%20a%20chance-red.svg)
+# Conveyr
+
+[![NPM Badge](http://img.shields.io/npm/v/conveyr.svg)](https://www.npmjs.com/package/conveyr)
+![Travis Badge](https://travis-ci.org/skeswa/conveyr.svg?branch=develop)
+![Dependencies Badge](https://david-dm.org/skeswa/conveyr.svg)
+![Usability Badge](https://img.shields.io/badge/ready%20for%20use%3F-not%20a%20chance-red.svg)  
+
 Conveyr uses the best parts of Facebook's [Flux](https://facebook.github.io/flux/) architecture to make building modern web applications with [React](https://facebook.github.io/react/) simple.  
 
 Conveyr provides tools that create a **unidirectional data flow**. This means that all changes in your application state follow a _predictable_ lifecycle. Ultimately, the advantage of this architecture is its ability to make even the most complicated web applications easy to follow. For more on the unidirectional data flow pattern, watch [this video](https://youtu.be/nYkdrAPrdcw?list=PLb0IAmt7-GS188xDYE-u1ShQmFFGbrk0v).
+
+## Installation
+
+Conveyr is primarily intended for [Browserify-based](http://browserify.org/) web applications. So, you should install it using [NPM](https://www.npmjs.com/):
+```
+npm i --save conveyr
+```
+However, in future, a distribution of the library will be made available for more canonical web application structures using the [Bower](http://bower.io/) package manager.
 
 ## Anatomy
 
 ![Diagram](https://raw.github.com/skeswa/conveyr/master/docs/diagram.jpg)  
 
-- **Actions**  
-Actions are events that describe their consequences.  
-For example, consider an event that follows a user clicking a button that closes a window. An ordinary event emitted after this event could be called `close-button-clicked`. However, if instead we used an Action, it might be called `close-window`. Observe how actions describe intent while typical events do not.
-- **Services**  
-Services change your application state.  
+- **Actions are events that describe behavior.**  
+For example, consider an event that follows a user clicking a button that closes a window. An ordinary event emitted after this event could be called `close-button-clicked`. However, if instead we used an Action, it might be called `close-window`. Observe how actions describe behavior while typical events do not.
+- **Services change your application state.**  
 Actions are responsible for triggering Services. Services are responsible with permuting application stateREST APIs & Websocket Connections are good examples of resources that a Service would interact with.  interact interact with external resources, and changes in application state that result from these interactions are propagated to Stores.
-- **Stores**  
-Stores manage **all** of your application's state.  
+- **Stores manage _all_ of your application's state.**  
 From session information to the results of a search, Stores pass state along to views, and they alone determine what views can render.
-- **Views**  
-Views render data.  
-Its as simple as that. Thereafter, views can have other responsibility - such as, emitting actions when the user interacts with the application via the browser. Conveyr is built to use React Components as its views.  
-- **Emitters**  
-Emitters create Actions outside user interaction.  
-Every application has things like these. For example, consider the case where a web application must react to the window resizing: an Emitter is how the application would change its state to adapt to this external event.
+- **Views present application data to the user.**  
+Its as simple as that. By binding to Stores, Views can re-render themselves whenever application state changes. The simplicity of this paradigm makes application-wide UI changes a cinch. Furthermore, Views often create Actions based on user interactions.
+- **Emitters turn external events into Actions.**   
+Every application has important interactions that occur without the user causing them. For instance, consider the case where a web application must react to the window resizing: the application needs to bind a behavior to that event to resize and redaw itself. Emitters are how Conveyr-based applications adapt to external events like these.
 
 ## Usage
 ### Creating Actions
@@ -239,3 +248,6 @@ export default class SomeComponent extends View {
     * [ ] Write documentation
     * [ ] Add logging endpoints everywhere
     * [ ] Write the `Log` interface
+* [ ] Browserified & Minified distributions
+* [ ] In-browser tests
+* [ ] Bower package deployment
