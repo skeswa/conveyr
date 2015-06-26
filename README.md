@@ -19,19 +19,19 @@ Conveyr is primarily intended for [Browserify-based](http://browserify.org/) web
 
 ![Diagram](https://raw.github.com/skeswa/conveyr/master/docs/diagram.jpg)  
 
-**Actions are events that describe behavior.**  
+**[Actions](https://github.com/skeswa/conveyr/blob/develop/README.md#actions) are events that describe behavior.**  
 For example, consider an event that follows a user clicking a button that closes a window. An ordinary event emitted after this event could be called `close-button-clicked`. However, if instead we used an Action, it might be called `close-window`. Observe how actions describe behavior while typical events do not.  
 
-**Services change your application state.**  
-Actions are responsible for triggering Services. Services are responsible with permuting application stateREST APIs & Websocket Connections are good examples of resources that a Service would interact with.  interact interact with external resources, and changes in application state that result from these interactions are propagated to Stores.  
+**[Services](https://github.com/skeswa/conveyr/blob/develop/README.md#services) change your application state.**  
+Services are responsible for permuting application state, often with aid of external resources like REST APIs & Websocket Connections. Accordingly, Services are the only parts of your web application that can directly mutate Stores. So, in many ways, Services can be viewed as the centerpoint of Conveyr web applications.
 
-**Stores manage _all_ of your application's state.**  
+**[Stores](https://github.com/skeswa/conveyr/blob/develop/README.md#stores) encapsulate _all_ of your application's state.**  
 From session information to the results of a search, Stores pass state along to views, and they alone determine what views can render.  
 
-**Views present application data to the user.**  
+**[Views](https://github.com/skeswa/conveyr/blob/develop/README.md#views) present application state to the user.**  
 Its as simple as that. By binding to Stores, Views can re-render themselves whenever application state changes. The simplicity of this paradigm makes application-wide UI changes a cinch. Furthermore, Views often create Actions based on user interactions.  
 
-**Emitters turn external events into Actions.**   
+**[Emitters](https://github.com/skeswa/conveyr/blob/develop/README.md#emitters) turn external events into Actions.**   
 Every application has important interactions that occur without the user causing them. For instance, consider the case where a web application must react to the window resizing: the application needs to bind a behavior to that event to resize and redaw itself. Emitters are how Conveyr-based applications adapt to external events like these.
 
 ## Actions
@@ -84,9 +84,9 @@ import {Store} from 'conveyr';
 
 export const SomeStore = Store('some-store')
     // defines() accepts a simple name-type pair
-    .defines('some-field',      Number)
+    .defines('some-field', Number)
     // Types should be either native javascript types...
-    .defines('another-field',   Array)
+    .defines('another-field', Array)
     // ...or fully-qualified types as shown below
     .defines('some-other-field', {
         type: Object,
@@ -170,12 +170,75 @@ The handler function passed to `invokes()` is **dependency injected**. This mean
 
 ## Views
 ### Integrating with Stores
-TODO (Sandile): basic examples of binding/unbinding + a basic "rendering with stores" example
-### Why No Mixin?
-TODO (Sandile): brief explanation + link to react blog
+In a Conveyr web application, Views should get all application-level state from Stores. This means that when Store data changes, the Views should update. To create this interaction, we need to _bind_ Store Fields to Views using the `notify()` function. Passing a React Component as an argument to `notify()` will cause Store updates to invoke `forceUpdate()` on that React Component.
+#### Traditional React Components
+In a traditional component, we need to put Store binding logic into the `componentDidMount()` function. Notice that we don't have unbind the fields fince Conveyr knows to only notify a React Component when its mounted.
+```javascript
+import React from 'react';
+
+import {SomeStore, SomeOtherStore} from './my-stores';
+
+export default React.createClass({
+    componentDidMount() {
+        SomeStore.fields('some-field', 'some-other-field').notify(this);
+        SomeOtherStore.field('yet-another-field').notifies(this);
+    },
+    
+    render() {
+        return (
+            <div>
+                <label>Some Field:</label>
+                <p>{SomeStore.field('some-field').value()}</p>
+                <label>Some Other Field:</label>
+                <p>{SomeStore.field('some-other-field').value()}</p>
+                <label>Some Field:</label>
+                <p>{SomeOtherStore.field('yet-another-field').value()}</p>
+            </div>
+        );
+    }
+});
+```
+#### ES6-Style React Components
+In classes that extend `React.Component`, all you have to do is put the binding logic for Stores in the constructor. Otherwise, everything works identically to traditional React Components.
+```javascript
+import React from 'react';
+
+import {SomeStore, SomeOtherStore} from './my-stores';
+
+export default class MyComponent extends React.Component {
+    constructor() {
+        this.state = {};
+        this.props = {};
+        
+        SomeStore.fields('some-field', 'some-other-field').notify(this);
+        SomeOtherStore.field('yet-another-field').notifies(this);
+    },
+    
+    render() {
+        return (
+            <div>
+                <label>Some Field:</label>
+                <p>{SomeStore.field('some-field').value()}</p>
+                <label>Some Other Field:</label>
+                <p>{SomeStore.field('some-other-field').value()}</p>
+                <label>Some Field:</label>
+                <p>{SomeOtherStore.field('yet-another-field').value()}</p>
+            </div>
+        );
+    }
+}
+```
+### Why No React Mixin?
+A quote from the introductory post of React 0.13:
+> Unfortunately, we will not launch any mixin support for ES6 classes in React. That would defeat the purpose of only using idiomatic JavaScript concepts.<br><br>
+There is no standard and universal way to define mixins in JavaScript. In fact, several features to support mixins were dropped from ES6 today. There are a lot of libraries with different semantics. We think that there should be one way of defining mixins that you can use for any JavaScript class. React just making another doesn’t help that effort.
+
+The jury's out on this one: Mixins just don't seem likely to be part of React in future. This is why Conveyr simply offers a binding function - and that's it. If the React team comes up with a better way to accomplish view binding, rest assured that Conveyr implement it.
+
+For more robust consideration of the above quote, check out [this article](https://medium.com/@dan_abramov/mixins-are-dead-long-live-higher-order-components-94a0d2f9e750).
 
 ## Emitters
-Emitters have specifically been excluded from the Conveyor library because they are so simple to implement. All an Emitter truly needs to do is fire Actions when certain events occur. Take for example an Emitter that handles window resize events:
+Emitters have specifically been excluded from the Conveyr library because they are so simple to implement. All an Emitter truly needs to do is fire Actions when certain events occur. Take for example an Emitter that handles window resize events:
 ```javascript
 import {SomeWindowResizeAction} from './my-actions';
 
@@ -190,7 +253,7 @@ if (window.attachEvent) {
     window.location.href = 'https://www.mozilla.org/en-US/firefox/new/';
 }
 ```
-As you can see above, nobody _really_ needs any help adding Emitters to their application. However, people need help with their browser choices ;-D.
+As you can see above, nobody _really_ needs any help adding Emitters to their application. Now go forth and emit all the things!
 
 ## Todos
 * [x] Actions
@@ -200,29 +263,34 @@ As you can see above, nobody _really_ needs any help adding Emitters to their ap
     * [x] Write a generic argument validator
     * [x] Add the payload feature
     * [x] Rewrite tests
+    * [ ] API specification in docs
 * [x] Replace event emitter with direct invocation
 * [ ] Services
     * [x] Rewrite documentation
     * [x] Remove `actions()`
     * [x] Rewrite tests
     * [ ] Write service-action integration test
+    * [ ] API specification in docs
 * [ ] Stores
     * [x] Touch up documentation
     * [ ] Write validators
     * [ ] Finish mutators
     * [ ] Write tests
     * [ ] Write service-store integration test
+    * [ ] API specification in Wiki
 * [ ] Views
-    * [ ] Rewrite not to use mixins
-    * [ ] Touch up the documentation
+    * [x] Rewrite not to use mixins
+    * [x] Touch up the documentation
     * [ ] Write tests
-    * [ ] Write full-use-case integration test
+    * [ ] Write full-use-case integration 
+    * [ ] API specification in docs
 * [x] Emitters
     * [x] Write documentation
 * [ ] Configuration
     * [ ] Add documentation for `.configure({ ... })`
     * [ ] Add logging endpoints everywhere
     * [ ] Add log levels
+    * [ ] API specification in docs
 * [ ] Browserified & Minified distributions
 * [ ] In-browser tests
 * [ ] Bower package
