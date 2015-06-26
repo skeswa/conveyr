@@ -192,7 +192,7 @@ export default React.createClass({
                 <label>Some Other Field:</label>
                 <p>{SomeStore.field('some-other-field').value()}</p>
                 <label>Some Field:</label>
-                <p>{SomeStore.field('some-field').value()}</p>
+                <p>{SomeOtherStore.field('yet-another-field').value()}</p>
             </div>
         );
     }
@@ -222,7 +222,7 @@ export default class MyComponent extends React.Component {
                 <label>Some Other Field:</label>
                 <p>{SomeStore.field('some-other-field').value()}</p>
                 <label>Some Field:</label>
-                <p>{SomeStore.field('some-field').value()}</p>
+                <p>{SomeOtherStore.field('yet-another-field').value()}</p>
             </div>
         );
     }
