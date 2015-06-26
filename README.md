@@ -247,7 +247,7 @@ if (window.attachEvent) {
     window.location.href = 'https://www.mozilla.org/en-US/firefox/new/';
 }
 ```
-As you can see above, nobody _really_ needs any help adding Emitters to their application. However, people need help with their browser choices ;-D.
+As you can see above, nobody _really_ needs any help adding Emitters to their application. Now go forth and emit all the things!
 
 ## Todos
 * [x] Actions
