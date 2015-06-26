@@ -23,12 +23,12 @@ Conveyr is primarily intended for [Browserify-based](http://browserify.org/) web
 For example, consider an event that follows a user clicking a button that closes a window. An ordinary event emitted after this event could be called `close-button-clicked`. However, if instead we used an Action, it might be called `close-window`. Observe how actions describe behavior while typical events do not.  
 
 **Services change your application state.**  
-Services are responsible for permuting application state, often with aid of external resources like REST APIs & Websocket Connections. Accordingly, Services are the only parts of your web application that can directly mutate Stores. So, in many ways, Services can be viewed as the centerpoint of Conveyr applications.
+Services are responsible for permuting application state, often with aid of external resources like REST APIs & Websocket Connections. Accordingly, Services are the only parts of your web application that can directly mutate Stores. So, in many ways, Services can be viewed as the centerpoint of Conveyr web applications.
 
-**Stores manage _all_ of your application's state.**  
+**Stores encapsulate _all_ of your application's state.**  
 From session information to the results of a search, Stores pass state along to views, and they alone determine what views can render.  
 
-**Views present application data to the user.**  
+**Views present application state to the user.**  
 Its as simple as that. By binding to Stores, Views can re-render themselves whenever application state changes. The simplicity of this paradigm makes application-wide UI changes a cinch. Furthermore, Views often create Actions based on user interactions.  
 
 **Emitters turn external events into Actions.**   
