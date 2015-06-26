@@ -84,9 +84,9 @@ import {Store} from 'conveyr';
 
 export const SomeStore = Store('some-store')
     // defines() accepts a simple name-type pair
-    .defines('some-field',      Number)
+    .defines('some-field', Number)
     // Types should be either native javascript types...
-    .defines('another-field',   Array)
+    .defines('another-field', Array)
     // ...or fully-qualified types as shown below
     .defines('some-other-field', {
         type: Object,
@@ -170,7 +170,64 @@ The handler function passed to `invokes()` is **dependency injected**. This mean
 
 ## Views
 ### Integrating with Stores
-TODO (Sandile): basic examples of binding/unbinding + a basic "rendering with stores" example
+In a Conveyr web application, Views should get all application-level state from Stores. This means that when Store data changes, the Views should update. To create this interaction, we need to _bind_ Store Fields to Views using the `notify()` function. Passing a React Component as an argument to `notify()` will cause Store updates to invoke `forceUpdate()` on that React Component.
+#### Traditional React Components
+In a traditional component, we need to put Store binding logic into the `componentDidMount()` function. Notice that we don't have unbind the fields fince Conveyr knows to only notify a React Component when its mounted.
+```javascript
+import React from 'react';
+
+import {SomeStore, SomeOtherStore} from './my-stores';
+
+export default React.createClass({
+    componentDidMount() {
+        SomeStore.fields('some-field', 'some-other-field').notify(this);
+        SomeOtherStore.field('yet-another-field').notifies(this);
+    },
+    
+    render() {
+        return (
+            <div>
+                <label>Some Field:</label>
+                <p>{SomeStore.field('some-field').value()}</p>
+                <label>Some Other Field:</label>
+                <p>{SomeStore.field('some-other-field').value()}</p>
+                <label>Some Field:</label>
+                <p>{SomeStore.field('some-field').value()}</p>
+            </div>
+        );
+    }
+});
+```
+#### ES6-Style React Components
+In classes that extend `React.Component`, all you have to do is put the binding logic for Stores in the constructor. Otherwise, everything works identically to traditional React Components.
+```javascript
+import React from 'react';
+
+import {SomeStore, SomeOtherStore} from './my-stores';
+
+export default class MyComponent extends React.Component {
+    constructor() {
+        this.state = {};
+        this.props = {};
+        
+        SomeStore.fields('some-field', 'some-other-field').notify(this);
+        SomeOtherStore.field('yet-another-field').notifies(this);
+    },
+    
+    render() {
+        return (
+            <div>
+                <label>Some Field:</label>
+                <p>{SomeStore.field('some-field').value()}</p>
+                <label>Some Other Field:</label>
+                <p>{SomeStore.field('some-other-field').value()}</p>
+                <label>Some Field:</label>
+                <p>{SomeStore.field('some-field').value()}</p>
+            </div>
+        );
+    }
+}
+```
 ### Why No Mixin?
 TODO (Sandile): brief explanation + link to react blog
 
@@ -190,7 +247,7 @@ if (window.attachEvent) {
     window.location.href = 'https://www.mozilla.org/en-US/firefox/new/';
 }
 ```
-As you can see above, nobody _really_ needs any help adding Emitters to their application. However, people need help with their browser choices ;-D.
+As you can see above, nobody _really_ needs any help adding Emitters to their application. Now go forth and emit all the things!
 
 ## Todos
 * [x] Actions
@@ -200,29 +257,34 @@ As you can see above, nobody _really_ needs any help adding Emitters to their ap
     * [x] Write a generic argument validator
     * [x] Add the payload feature
     * [x] Rewrite tests
+    * [ ] API specification in Wiki
 * [x] Replace event emitter with direct invocation
 * [ ] Services
     * [x] Rewrite documentation
     * [x] Remove `actions()`
     * [x] Rewrite tests
     * [ ] Write service-action integration test
+    * [ ] API specification in Wiki
 * [ ] Stores
     * [x] Touch up documentation
     * [ ] Write validators
     * [ ] Finish mutators
     * [ ] Write tests
     * [ ] Write service-store integration test
+    * [ ] API specification in Wiki
 * [ ] Views
-    * [ ] Rewrite not to use mixins
-    * [ ] Touch up the documentation
+    * [x] Rewrite not to use mixins
+    * [x] Touch up the documentation
     * [ ] Write tests
-    * [ ] Write full-use-case integration test
+    * [ ] Write full-use-case integration 
+    * [ ] API specification in Wiki
 * [x] Emitters
     * [x] Write documentation
 * [ ] Configuration
     * [ ] Add documentation for `.configure({ ... })`
     * [ ] Add logging endpoints everywhere
     * [ ] Add log levels
+    * [ ] API specification in Wiki
 * [ ] Browserified & Minified distributions
 * [ ] In-browser tests
 * [ ] Bower package
