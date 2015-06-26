@@ -263,14 +263,14 @@ As you can see above, nobody _really_ needs any help adding Emitters to their ap
     * [x] Write a generic argument validator
     * [x] Add the payload feature
     * [x] Rewrite tests
-    * [ ] API specification in Wiki
+    * [ ] API specification in docs
 * [x] Replace event emitter with direct invocation
 * [ ] Services
     * [x] Rewrite documentation
     * [x] Remove `actions()`
     * [x] Rewrite tests
     * [ ] Write service-action integration test
-    * [ ] API specification in Wiki
+    * [ ] API specification in docs
 * [ ] Stores
     * [x] Touch up documentation
     * [ ] Write validators
@@ -283,14 +283,14 @@ As you can see above, nobody _really_ needs any help adding Emitters to their ap
     * [x] Touch up the documentation
     * [ ] Write tests
     * [ ] Write full-use-case integration 
-    * [ ] API specification in Wiki
+    * [ ] API specification in docs
 * [x] Emitters
     * [x] Write documentation
 * [ ] Configuration
     * [ ] Add documentation for `.configure({ ... })`
     * [ ] Add logging endpoints everywhere
     * [ ] Add log levels
-    * [ ] API specification in Wiki
+    * [ ] API specification in docs
 * [ ] Browserified & Minified distributions
 * [ ] In-browser tests
 * [ ] Bower package
