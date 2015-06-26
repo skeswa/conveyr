@@ -170,7 +170,7 @@ The handler function passed to `invokes()` is **dependency injected**. This mean
 
 ## Views
 ### Integrating with Stores
-In a Conveyr web application, Views should get all application-level state from Stores. This means that when Store data changes, the Views should update. To create this interaction, we need to _bind_ Store Fields to Views using th e `notify()` function. Calling `notify()` on a React Component will make Store Updates invoke `forceUpdate()` on that React Component.
+In a Conveyr web application, Views should get all application-level state from Stores. This means that when Store data changes, the Views should update. To create this interaction, we need to _bind_ Store Fields to Views using th e `notify()` function. Passing a React Component as an argument to `notify()` will cause Store updates to invoke `forceUpdate()` on that React Component.
 #### Traditional React Components
 In a traditional component, we need to put Store binding logic into the `componentDidMount()` function. Notice that we don't have unbind the fields fince Conveyr knows to only notify a React Component when its mounted.
 ```javascript
