@@ -170,7 +170,7 @@ The handler function passed to `invokes()` is **dependency injected**. This mean
 
 ## Views
 ### Integrating with Stores
-In a Conveyr web application, Views should get all application-level state from Stores. This means that when Store data changes, the Views should update. To create this interaction, we need to _bind_ Store Fields to Views using th e `notify()` function. Passing a React Component as an argument to `notify()` will cause Store updates to invoke `forceUpdate()` on that React Component.
+In a Conveyr web application, Views should get all application-level state from Stores. This means that when Store data changes, the Views should update. To create this interaction, we need to _bind_ Store Fields to Views using the `notify()` function. Passing a React Component as an argument to `notify()` will cause Store updates to invoke `forceUpdate()` on that React Component.
 #### Traditional React Components
 In a traditional component, we need to put Store binding logic into the `componentDidMount()` function. Notice that we don't have unbind the fields fince Conveyr knows to only notify a React Component when its mounted.
 ```javascript
@@ -257,29 +257,34 @@ As you can see above, nobody _really_ needs any help adding Emitters to their ap
     * [x] Write a generic argument validator
     * [x] Add the payload feature
     * [x] Rewrite tests
+    * [ ] API specification in Wiki
 * [x] Replace event emitter with direct invocation
 * [ ] Services
     * [x] Rewrite documentation
     * [x] Remove `actions()`
     * [x] Rewrite tests
     * [ ] Write service-action integration test
+    * [ ] API specification in Wiki
 * [ ] Stores
     * [x] Touch up documentation
     * [ ] Write validators
     * [ ] Finish mutators
     * [ ] Write tests
     * [ ] Write service-store integration test
+    * [ ] API specification in Wiki
 * [ ] Views
     * [x] Rewrite not to use mixins
     * [x] Touch up the documentation
     * [ ] Write tests
-    * [ ] Write full-use-case integration test
+    * [ ] Write full-use-case integration 
+    * [ ] API specification in Wiki
 * [x] Emitters
     * [x] Write documentation
 * [ ] Configuration
     * [ ] Add documentation for `.configure({ ... })`
     * [ ] Add logging endpoints everywhere
     * [ ] Add log levels
+    * [ ] API specification in Wiki
 * [ ] Browserified & Minified distributions
 * [ ] In-browser tests
 * [ ] Bower package
