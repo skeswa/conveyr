@@ -142,7 +142,7 @@ export const SomeService = Service('some-service')
             actionId, /* The id of the action that invoked this service */
             action, /* The action that invoked this service */
             payload, /* The data passed in by the action */
-            callback /* The callback to signal when the handler is finished */
+            callback, /* The callback to signal when the handler is finished */
         ) {
             tickleTheBackend((response) => {
                 if (response.successful) {
@@ -169,11 +169,10 @@ The handler function passed to `invokes()` is **dependency injected**. This mean
 ```
 
 ## Views
-### Why No Mixin?
-Reasons.
-TODO (Sandile): brief explanation + link to react blog
-### Inegrating with Stores
+### Integrating with Stores
 TODO (Sandile): basic examples of binding/unbinding + a basic "rendering with stores" example
+### Why No Mixin?
+TODO (Sandile): brief explanation + link to react blog
 
 ## Emitters
 Emitters have specifically been excluded from the Conveyor library because they are so simple to implement. All an Emitter truly needs to do is fire Actions when certain events occur. Take for example an Emitter that handles window resize events:
