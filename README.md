@@ -63,7 +63,7 @@ import {SomeAction} from './my-actions';
 // Actions can be invoked just like functions.
 // This would throw an error if either `thing1` or `thing2` was not provided
 // since the "thing3" field has a default.
-SomeAction({ thing1: [1, 2, 3], thing2: '4' });
+SomeAction({ thing1: [1, 2, 3], thing2: 4 });
 ```
 Actions also return a [Promise](http://www.html5rocks.com/en/tutorials/es6/promises) so that you can react according to whether Action invocation was successful or not. Also, keep in mind that Action promises *do not return anything* in the successful case of the promise. This means that the `then()` function of the promise will always be passed zero arguments.
 ```javascript
