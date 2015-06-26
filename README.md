@@ -76,41 +76,73 @@ SomeOtherAction('some argument')
 
 ## Stores
 ### Creating Stores
+Stores maintain all application state in Store Fields. Store Fields are typed, and
+named sub-properties of Stores. The `defines()` function allows the creation of fields
+on stores.
 ```javascript
 import {Store} from 'conveyr';
 
-// TODO (Sandile): better wording on this
-export const SomeStore = Store('some-store').includes({
-    someNumberField:    Number,
-    someStringField:    { type: String, default: 'stuff' },
-    someArrayField:     Array,
-    someBooleanField:   { type: Boolean, default: false },
-    someObjectField:    Object
-});
+export const SomeStore = Store('some-store')
+    // defines() accepts a simple name-type pair
+    .defines('some-field',      Number)
+    // Types should be either native javascript types...
+    .defines('another-field',   Array)
+    // ...or fully-qualified types as shown below
+    .defines('some-other-field', {
+        type: Object,
+        default: { a: 1, b: 2, c: 3 }
+    });
 ```
 ### Using Stores
-TODO(Sandile): add store documentation _in general_
+Stores are mostly read-only, and the only way to access their data is via its Store Fields. Store Fields can be selected with the `field()` function. The `field()` function takes only the Field's name as an argument:
+```javascript
+import {SomeStore} from './my-stores';
+
+// Selects the "some-other-field" field
+SomeStore.field('some-other-field');
+```
+Once selected, Store Fields have three principal functions: `value()`, `update()` and `revision()`. The `value()` function simply returns the current value of the field:
+```javascript
+// Prints the value of the "some-other-field" field
+console.log(SomeStore.field('some-other-field').value());
+```
+The `update()` function transforms the value of the field. This is the only function that can change the state of a Store Field. The `update()` function needs a context variable to work - this can only be obtained within a Service handler function (discussed below).
+```javascript
+// Changes the value of the "some-field" field
+// Takes the "context" variable (obtained within a Service) as the first parameter
+// The second parameter is the mutator function - it simply takes the current value
+// of the field and returns a different version.
+SomeStore.field('some-field').value(context, currentValue => currentValue + 1);
+```
+Lastly, the `revision()` function returns the number of times, starting at 0, that the Store Field has been changed.
+```javascript
+// Prints how many times the "another-field" field has changed
+console.log(SomeStore.field('another-field').revision()); // Prints 0
+// This will update the value of another-field
+SomeStore.field('another-field').value(context, currentValue => currentValue.concat('lol'));
+// Will print an update revision count
+console.log(SomeStore.field('another-field').revision()); // Prints 1
+```
 
 ## Services
 ### Creating Services
+Services are the only parts of the application that can make changes to Stores. As such, when creating a Service, the `updates()` functions allows you to specify which Stores the Service can update. The `updates()` function takes Stores and/or Store Ids as arguments. The `invokes()` function attaches behavior logic, in the form of a handler function, to the Service.
 ```javascript
 import {Service} from 'conveyr';
 
 import {SomeStore} from './my-stores';
 
 export const SomeService = Service('some-service')
-    // Service are the only parts of the application that can make changes
-    // to Stores. This `mutates()` function takes the list of stores or store ids
-    // that this endpoint has permission to mutate.
+    // The `mutates()` function takes the list of stores or store ids
     .updates(SomeStore, 'some-other-store')
-    // The handler is the function that performs all of the endpoint's logic
+    // The handler is the function that performs all of the Service's logic
     .invokes(
         function(
-            context,    // Reference that gives this service handler the ability
-                        // to mutate the stores it declared as related
-            actionId,   // The id of the action that invoked this service handler
+            context,    // Token used for Store manipulation
+            actionId,   // The id of the action that invoked this service
+            action,     // The instance of the action that invoked this service
             payload,    // The data passed in by the action
-            done        // The error-first callback that indicates whether the handled
+            callback    // The error-first callback that indicates whether the handled
                         // was able to execute successfully
         ) {
             tickleTheBackend((response) => {
@@ -120,34 +152,21 @@ export const SomeService = Service('some-service')
                         return currentUsers.concat(res.body);
                     });
                     // Signals that this service has finished executing
-                    done();
+                    callback();
                 } else {
-                    done(response.problem);
+                    callback(response.problem);
                 }
             });
-            // Submit our request
-            Agent.post('/users')
-                .send(payload)
-                .end((err, res) => {
-                    if (err) {
-                        done(err);
-                    } else if (!res.ok) {
-                        // Very standard promise behavior here
-                        done('Something went wrong :(');
-                    } else {
-                        // Add our new user to the store using the `update(...)` function.
-                        // The update function takes the provided context parameter and a
-                        // mutator function. The store then applies the mutator function
-                        // and updates views subscribed to those fields.
-                        UserStore.field('users').update(context, (currentUsers) => {
-                            return currentUsers.concat(res.body);
-                        });
-                        // Resolve the promise since we're done here
-                        // NOTE: make sure you call this - there *is* a timeout that results in an error
-                        done();
-                    }
-                });
         });
+```
+The handler function passed to `invokes()` is **dependency injected**. This means that you can pick and choose what arguments to include in your handler function definition - **as long as you have a callback**. So all of the following examples would all be valid handler functions:
+```javascript
+// You can choose as few arguments as you want
+.invokes((callback) => { ... });
+// Why not add a few more? The arguments can be ordered any way you like.
+.invokes((callback, payload, context) => { ... });
+// If you repeat arguments, only the last one in the sequence has a value
+.invokes((actionId, callback, payload, payload, payload) => { ... });
 ```
 
 ## Views
@@ -185,12 +204,12 @@ As you can see above, nobody _really_ needs any help adding Emitters to their ap
     * [x] Rewrite tests
 * [x] Replace event emitter with direct invocation
 * [ ] Services
-    * [ ] Rewrite documentation
+    * [x] Rewrite documentation
     * [x] Remove `actions()`
     * [x] Rewrite tests
     * [ ] Write service-action integration test
 * [ ] Stores
-    * [ ] Touch up documentation
+    * [x] Touch up documentation
     * [ ] Write validators
     * [ ] Finish mutators
     * [ ] Write tests
