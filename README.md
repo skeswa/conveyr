@@ -170,7 +170,64 @@ The handler function passed to `invokes()` is **dependency injected**. This mean
 
 ## Views
 ### Integrating with Stores
-TODO (Sandile): basic examples of binding/unbinding + a basic "rendering with stores" example
+In a Conveyr web application, Views should get all application-level state from Stores. This means that when Store data changes, the Views should update. To create this interaction, we need to _bind_ Store Fields to Views using th e `notify()` function. Calling `notify()` on a React Component will make Store Updates invoke `forceUpdate()` on that React Component.
+#### Traditional React Components
+In a traditional component, we need to put Store binding logic into the `componentDidMount()` function. Notice that we don't have unbind the fields fince Conveyr knows to only notify a React Component when its mounted.
+```javascript
+import React from 'react';
+
+import {SomeStore, SomeOtherStore} from './my-stores';
+
+export default React.createClass({
+    componentDidMount() {
+        SomeStore.fields('some-field', 'some-other-field').notify(this);
+        SomeOtherStore.field('yet-another-field').notifies(this);
+    },
+    
+    render() {
+        return (
+            <div>
+                <label>Some Field:</label>
+                <p>{SomeStore.field('some-field').value()}</p>
+                <label>Some Other Field:</label>
+                <p>{SomeStore.field('some-other-field').value()}</p>
+                <label>Some Field:</label>
+                <p>{SomeStore.field('some-field').value()}</p>
+            </div>
+        );
+    }
+});
+```
+#### ES6-Style React Components
+In classes that extend `React.Component`, all you have to do is put the binding logic for Stores in the constructor. Otherwise, everything works identically to traditional React Components.
+```javascript
+import React from 'react';
+
+import {SomeStore, SomeOtherStore} from './my-stores';
+
+export default class MyComponent extends React.Component {
+    constructor() {
+        this.state = {};
+        this.props = {};
+        
+        SomeStore.fields('some-field', 'some-other-field').notify(this);
+        SomeOtherStore.field('yet-another-field').notifies(this);
+    },
+    
+    render() {
+        return (
+            <div>
+                <label>Some Field:</label>
+                <p>{SomeStore.field('some-field').value()}</p>
+                <label>Some Other Field:</label>
+                <p>{SomeStore.field('some-other-field').value()}</p>
+                <label>Some Field:</label>
+                <p>{SomeStore.field('some-field').value()}</p>
+            </div>
+        );
+    }
+}
+```
 ### Why No Mixin?
 TODO (Sandile): brief explanation + link to react blog
 
@@ -213,8 +270,8 @@ As you can see above, nobody _really_ needs any help adding Emitters to their ap
     * [ ] Write tests
     * [ ] Write service-store integration test
 * [ ] Views
-    * [ ] Rewrite not to use mixins
-    * [ ] Touch up the documentation
+    * [x] Rewrite not to use mixins
+    * [x] Touch up the documentation
     * [ ] Write tests
     * [ ] Write full-use-case integration test
 * [x] Emitters
