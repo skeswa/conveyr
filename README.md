@@ -138,12 +138,17 @@ export const SomeService = Service('some-service')
     // The handler is the function that performs all of the Service's logic
     .invokes(
         function(
-            context,    // Token used for Store manipulation
-            actionId,   // The id of the action that invoked this service
-            action,     // The instance of the action that invoked this service
-            payload,    // The data passed in by the action
-            callback    // The error-first callback that indicates whether the handled
-                        // was able to execute successfully
+            // Token used for Store manipulation
+            context,
+            // The id of the action that invoked this service
+            actionId,
+            // The instance of the action that invoked this service
+            action,
+            // The data passed in by the action
+            payload,
+            // The error-first callback that indicates whether the handled
+            // was able to execute successfully
+            callback
         ) {
             tickleTheBackend((response) => {
                 if (response.successful) {
