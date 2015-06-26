@@ -84,9 +84,9 @@ import {Store} from 'conveyr';
 
 export const SomeStore = Store('some-store')
     // defines() accepts a simple name-type pair
-    .defines('some-field',      Number)
+    .defines('some-field', Number)
     // Types should be either native javascript types...
-    .defines('another-field',   Array)
+    .defines('another-field', Array)
     // ...or fully-qualified types as shown below
     .defines('some-other-field', {
         type: Object,
