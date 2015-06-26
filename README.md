@@ -19,19 +19,19 @@ Conveyr is primarily intended for [Browserify-based](http://browserify.org/) web
 
 ![Diagram](https://raw.github.com/skeswa/conveyr/master/docs/diagram.jpg)  
 
-**Actions are events that describe behavior.**  
+**[Actions](https://github.com/skeswa/conveyr/blob/develop/README.md#actions) are events that describe behavior.**  
 For example, consider an event that follows a user clicking a button that closes a window. An ordinary event emitted after this event could be called `close-button-clicked`. However, if instead we used an Action, it might be called `close-window`. Observe how actions describe behavior while typical events do not.  
 
-**Services change your application state.**  
+**[Services](https://github.com/skeswa/conveyr/blob/develop/README.md#services) change your application state.**  
 Services are responsible for permuting application state, often with aid of external resources like REST APIs & Websocket Connections. Accordingly, Services are the only parts of your web application that can directly mutate Stores. So, in many ways, Services can be viewed as the centerpoint of Conveyr web applications.
 
-**Stores encapsulate _all_ of your application's state.**  
+**[Stores](https://github.com/skeswa/conveyr/blob/develop/README.md#stores) encapsulate _all_ of your application's state.**  
 From session information to the results of a search, Stores pass state along to views, and they alone determine what views can render.  
 
-**Views present application state to the user.**  
+**[Views](https://github.com/skeswa/conveyr/blob/develop/README.md#views) present application state to the user.**  
 Its as simple as that. By binding to Stores, Views can re-render themselves whenever application state changes. The simplicity of this paradigm makes application-wide UI changes a cinch. Furthermore, Views often create Actions based on user interactions.  
 
-**Emitters turn external events into Actions.**   
+**[Emitters](https://github.com/skeswa/conveyr/blob/develop/README.md#emitters) turn external events into Actions.**   
 Every application has important interactions that occur without the user causing them. For instance, consider the case where a web application must react to the window resizing: the application needs to bind a behavior to that event to resize and redaw itself. Emitters are how Conveyr-based applications adapt to external events like these.
 
 ## Actions
