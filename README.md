@@ -136,27 +136,26 @@ export const SomeService = Service('some-service')
     // The `mutates()` function takes the list of stores or store ids
     .updates(SomeStore, 'some-other-store')
     // The handler is the function that performs all of the Service's logic
-    .invokes(
-        function(
-            context, /* Token used for Store manipulation */
-            actionId, /* The id of the action that invoked this service */
-            action, /* The action that invoked this service */
-            payload, /* The data passed in by the action */
-            callback, /* The callback to signal when the handler is finished */
-        ) {
-            tickleTheBackend((response) => {
-                if (response.successful) {
-                    // The "context" variable enables mutation of the store's fields
-                    SomeStore.field('some-field').update(context, (currentUsers) => {
-                        return currentUsers.concat(res.body);
-                    });
-                    // Signals that this service has finished executing
-                    callback();
-                } else {
-                    callback(response.problem);
-                }
-            });
+    .invokes(function(
+        context,    /* Token used for Store manipulation */
+        actionId,   /* The id of the action that invoked this service */
+        action,     /* The action that invoked this service */
+        payload,    /* The data passed in by the action */
+        callback,   /* The callback to signal when the handler is finished */
+    ) {
+        tickleTheBackend((response) => {
+            if (response.successful) {
+                // The "context" variable enables mutation of the store's fields
+                SomeStore.field('some-field').update(context, (currentUsers) => {
+                    return currentUsers.concat(res.body);
+                });
+                // Signals that this service has finished executing
+                callback();
+            } else {
+                callback(response.problem);
+            }
         });
+    });
 ```
 The handler function passed to `invokes()` is **dependency injected**. This means that you can pick and choose what arguments to include in your handler function definition - **as long as you have a callback**. So all of the following examples would all be valid handler functions:
 ```javascript
