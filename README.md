@@ -272,24 +272,31 @@ As you can see above, nobody _really_ needs any help adding Emitters to their ap
     * [ ] API specification in docs
 * [ ] Stores
     * [x] Touch up documentation
-    * [ ] Write validators
-    * [ ] Finish mutators
-    * [ ] Write tests
+    * [x] Write validators
+    * [x] Finish mutators
+    * [x] Write tests
     * [ ] Write service-store integration test
     * [ ] API specification in Wiki
 * [ ] Views
     * [x] Rewrite not to use mixins
     * [x] Touch up the documentation
-    * [ ] Write tests
-    * [ ] Write full-use-case integration 
-    * [ ] API specification in docs
 * [x] Emitters
     * [x] Write documentation
-* [ ] Configuration
-    * [ ] Add documentation for `.configure({ ... })`
-    * [ ] Add logging endpoints everywhere
-    * [ ] Add log levels
+* [ ] Log
+    * [ ] `level()`, `Log.VERBOSE`, `Log.DEBUG`, `Log.PRODUCTION`
+    * [ ] `endpoint(msgs)`
+    * [ ] Docs in README
     * [ ] API specification in docs
-* [ ] Browserified & Minified distributions
-* [ ] In-browser tests
-* [ ] Bower package
+* [ ] Tests
+    * [ ] Action-Service integration test
+    * [ ] Service-Store integration test
+    * [ ] Full Usecase integration test
+* [ ] Docs
+    * [ ] Write full API spec for Action
+    * [ ] Write full API spec for Service
+    * [ ] Write full API spec for Store
+    * [ ] Write full API spec for Config
+* [ ] Distribution
+    * [ ] Browserified & Minified distributions
+    * [ ] In-browser tests
+    * [ ] Bower package
