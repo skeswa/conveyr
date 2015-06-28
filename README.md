@@ -169,7 +169,7 @@ The handler function passed to `invokes()` is **dependency injected**. This mean
 
 ## Views
 ### Integrating with Stores
-In a Conveyr web application, Views should get all application-level state from Stores. This means that when Store data changes, the Views should update. To create this interaction, we need to _bind_ Store Fields to Views using the `notify()` function. Passing a React Component as an argument to `notify()` will cause Store updates to invoke `forceUpdate()` on that React Component.
+In a Conveyr web application, Views should get all application-level state from Stores. This means that when Store data changes, the Views should update. To create this interaction, we need to _bind_ Store Fields to Views using the either the `updates()` or `notifies()` function. Passing a React Component as an argument to `notifies()` will cause Store updates to invoke `forceUpdate()` on that React Component. Passing a React Component and a state variable name as arguments to `updates()` will cause Store updates to invoke `setState()` with updates for the indicated state variable.
 #### Traditional React Components
 In a traditional component, we need to put Store binding logic into the `componentDidMount()` function. Notice that we don't have unbind the fields fince Conveyr knows to only notify a React Component when its mounted.
 ```javascript
@@ -178,9 +178,17 @@ import React from 'react';
 import {SomeStore, SomeOtherStore} from './my-stores';
 
 export default React.createClass({
+    getInitialState() {
+        return {
+            foo: null
+        };
+    },
+    
     componentDidMount() {
         SomeStore.fields('some-field', 'some-other-field').notify(this);
         SomeOtherStore.field('yet-another-field').notifies(this);
+        // Below we bing this field to the "foo" state variable
+        SomeOtherStore.field('one-more-field').updates(this, 'foo');
     },
     
     render() {
@@ -192,6 +200,8 @@ export default React.createClass({
                 <p>{SomeStore.field('some-other-field').value()}</p>
                 <label>Some Field:</label>
                 <p>{SomeOtherStore.field('yet-another-field').value()}</p>
+                <label>Foo:</label>
+                <p>{this.state.foo}</p>
             </div>
         );
     }
@@ -206,11 +216,13 @@ import {SomeStore, SomeOtherStore} from './my-stores';
 
 export default class MyComponent extends React.Component {
     constructor() {
-        this.state = {};
+        this.state = { foo: null };
         this.props = {};
         
         SomeStore.fields('some-field', 'some-other-field').notify(this);
         SomeOtherStore.field('yet-another-field').notifies(this);
+        // Below we bing this field to the "foo" state variable
+        SomeOtherStore.field('one-more-field').updates(this, 'foo');
     },
     
     render() {
@@ -222,6 +234,8 @@ export default class MyComponent extends React.Component {
                 <p>{SomeStore.field('some-other-field').value()}</p>
                 <label>Some Field:</label>
                 <p>{SomeOtherStore.field('yet-another-field').value()}</p>
+                <label>Foo:</label>
+                <p>{this.state.foo}</p>
             </div>
         );
     }
