@@ -34,45 +34,6 @@ Its as simple as that. By binding to Stores, Views can re-render themselves when
 **[Emitters](https://github.com/skeswa/conveyr/blob/develop/README.md#emitters) turn external events into Actions.**   
 Every application has important interactions that occur without the user causing them. For instance, consider the case where a web application must react to the window resizing: the application needs to bind a behavior to that event to resize and redaw itself. Emitters are how Conveyr-based applications adapt to external events like these.
 
-## Actions
-### Creating Actions
-Actions are created with the `Action()` function. The `Action()` function takes Action Id string as its only argument. Action Ids represents Actions, and, appropriately, should be unique. The `Action()` function returns an **Action**. The `calls()` function of an Action specifies the Service that will be called when the Action is invoked. The `sends()` function of an Action specifies the structure of the data that should be passed to the Action when it is invoked.
-```javascript
-import {Action} from 'conveyr';
-import {SomeService} from './my-services';
-
-export const SomeAction = Action('some-action')
-    // Either a service id or an actual service is passed to this function
-    .calls(SomeService /* or 'some-service-id' instead */)
-    // The payload function can either take a flat object map, or just a type.
-    // (e.g. .sends(Number) or .sends({ type: Number, default: 3 }))
-    .sends({
-        thing1: Array,
-        thing2: Number,
-        // Below is an example of a fully-qualified type.
-        // Fields of fully-qualified types are considered *optional* if 
-        // they have defaults. Otherwise, all fields default to being required
-        thing3: { type: String, default: 'woop' }
-    });
-```
-### Using Actions
-Actions are simply functions and should be treated as such. Actions can be invoked with up to _one argument_. This argument is called the **payload** of the Action, and its format is specified by the `payload()` function (example above). If the payload format is specified, then Conveyr will perform validation on Action invocations to make sure the payload is correct.
-```javascript
-import {SomeAction} from './my-actions';
-
-// Actions can be invoked just like functions.
-// This would throw an error if either `thing1` or `thing2` was not provided
-// since the "thing3" field has a default.
-SomeAction({ thing1: [1, 2, 3], thing2: 4 });
-```
-Actions also return a [Promise](http://www.html5rocks.com/en/tutorials/es6/promises) so that you can react according to whether Action invocation was successful or not. Also, keep in mind that Action promises *do not return anything* in the successful case of the promise. This means that the `then()` function of the promise will always be passed zero arguments.
-```javascript
-import {SomeOtherAction} from './my-actions';
-
-SomeOtherAction('some argument')
-    .then(() => console.log('Aw yiss.'))
-    .catch(err => console.error('Eeek! It did not work:', err));
-```
 
 ## Stores
 ### Creating Stores
@@ -126,22 +87,23 @@ console.log(SomeStore.field('another-field').revision()); // Prints 1
 
 ## Services
 ### Creating Services
-Services are the only parts of the application that can make changes to Stores. As such, when creating a Service, the `updates()` functions allows you to specify which Stores the Service can update. The `updates()` function takes Stores and/or Store Ids as arguments. The `invokes()` function attaches behavior logic, in the form of a handler function, to the Service.
+Services are the only parts of the application that can make changes to Stores. As such, when creating a Service, the `updates()` functions allows you to specify which Stores the Service can update. The `updates()` function takes Stores and/or Store Ids as arguments. The `defines()` function attaches behavior logic to the Service by creating **Endpoints**. Endpoints are different operations that an Action can perform on the Service. Endpoints have an endpoint id and a handler function.
 ```javascript
 import {Service} from 'conveyr';
 
 import {SomeStore} from './my-stores';
 
 export const SomeService = Service('some-service')
-    // The `mutates()` function takes the list of stores or store ids
+    // The `updates()` function takes the list of stores or store ids
+    // that Store will affect
     .updates(SomeStore, 'some-other-store')
-    // The handler is the function that performs all of the Service's logic
-    .invokes(function(
+    // An defines an endpoint with its handler
+    .defines('tickle', function(
         context,    /* Token used for Store manipulation */
         actionId,   /* The id of the action that invoked this service */
         action,     /* The action that invoked this service */
         payload,    /* The data passed in by the action */
-        callback,   /* The callback to signal when the handler is finished */
+        callback,   /* The callback to finish async operations */
     ) {
         tickleTheBackend((response) => {
             if (response.successful) {
@@ -157,14 +119,54 @@ export const SomeService = Service('some-service')
         });
     });
 ```
-The handler function passed to `invokes()` is **dependency injected**. This means that you can pick and choose what arguments to include in your handler function definition - **as long as you have a callback**. So all of the following examples would all be valid handler functions:
+The handler function passed to `defines()` is **dependency injected**. This means that you can pick and choose what arguments to include in your handler function definition. For asynchronous operations, you must **specify a callback**. So all of the following examples would all be valid handler functions:
 ```javascript
 // You can choose as few arguments as you want
-.invokes((callback) => { ... });
+.defines('update', () => { ... });
 // Why not add a few more? The arguments can be ordered any way you like.
-.invokes((callback, payload, context) => { ... });
+.defines('delete', (callback, payload, context) => { ... });
 // If you repeat arguments, only the last one in the sequence has a value
-.invokes((actionId, callback, payload, payload, payload) => { ... });
+.defines('enchance', (actionId, callback, payload, payload, payload) => { ... });
+```
+
+## Actions
+### Creating Actions
+Actions are created with the `Action()` function. The `Action()` function takes Action Id string as its only argument. Action Ids represents Actions, and, appropriately, should be unique. The `Action()` function returns an **Action**. The `calls()` function of an Action specifies the Service Endpoint that will be called when the Action is invoked. The `sends()` function of an Action specifies the structure of the data that should be passed to the Action when it is invoked.
+```javascript
+import {Action} from 'conveyr';
+import {SomeService} from './my-services';
+
+export const SomeAction = Action('some-action')
+    // Either a service id or an actual service is passed to this function
+    .calls(SomeService.endpoint('tickle'))
+    // The payload function can either take a flat object map, or just a type.
+    // (e.g. .sends(Number) or .sends({ type: Number, default: 3 }))
+    .sends({
+        thing1: Array,
+        thing2: Number,
+        // Below is an example of a fully-qualified type.
+        // Fields of fully-qualified types are considered *optional* if 
+        // they have defaults. Otherwise, all fields default to being required
+        thing3: { type: String, default: 'woop' }
+    });
+```
+### Using Actions
+Actions are simply functions and should be treated as such. Actions can be invoked with up to _one argument_. This argument is called the **payload** of the Action, and its format is specified by the `payload()` function (example above). If the payload format is specified, then Conveyr will perform validation on Action invocations to make sure the payload is correct.
+```javascript
+import {SomeAction} from './my-actions';
+
+// Actions can be invoked just like functions.
+// This would throw an error if either `thing1` or `thing2` was not provided
+// since the "thing3" field has a default.
+SomeAction({ thing1: [1, 2, 3], thing2: 4 });
+```
+Actions also return a [Promise](http://www.html5rocks.com/en/tutorials/es6/promises) so that you can react according to whether Action invocation was successful or not. Also, keep in mind that Action promises *do not return anything* in the successful case of the promise. This means that the `then()` function of the promise will always be passed zero arguments.
+```javascript
+import {SomeOtherAction} from './my-actions';
+
+SomeOtherAction('some argument')
+    .then(() => console.log('Aw yiss.'))
+    .catch(err => console.error('Eeek! It did not work:', err));
 ```
 
 ## Views
