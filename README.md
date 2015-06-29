@@ -169,7 +169,7 @@ For a more robust consideration of the above quote, check out [this article](htt
 
 ## Services
 ### Creating Services
-Services are the only parts of the application that can make changes to Stores. As such, when creating a Service, the `updates()` functions allows you to specify which Stores the Service can update. The `updates()` function takes Stores and/or Store Ids as arguments. The `defines()` function attaches behavior logic to the Service by creating **Endpoints**. Endpoints are different operations that an Action can perform on the Service. Endpoints have an endpoint id and a handler function.
+Services are the only parts of the application that can make changes to Stores. As such, when creating a Service, the `updates()` functions allows you to specify which Stores the Service can update. The `updates()` function takes Stores and/or Store Ids as arguments. The `exposes()` function attaches behavior logic to the Service by creating **Endpoints**. Endpoints are different operations that an Action can perform on the Service. Endpoints have an endpoint id and a handler function.
 ```javascript
 import {Service} from 'conveyr';
 
@@ -180,7 +180,7 @@ export const SomeService = Service('some-service')
     // that Store will affect
     .updates(SomeStore, 'some-other-store')
     // An defines an endpoint with its handler
-    .defines('tickle', function(
+    .exposes('tickle', function(
         context,    /* Token used for Store manipulation */
         actionId,   /* The id of the action that invoked this service */
         action,     /* The action that invoked this service */
@@ -201,14 +201,14 @@ export const SomeService = Service('some-service')
         });
     });
 ```
-The handler function passed to `defines()` is **dependency injected**. This means that you can pick and choose what arguments to include in your handler function definition. For asynchronous operations, you must **specify a callback**. So all of the following examples would all be valid handler functions:
+The handler function passed to `exposes()` is **dependency injected**. This means that you can pick and choose what arguments to include in your handler function definition. For asynchronous operations, you must **specify a callback**. So all of the following examples would all be valid handler functions:
 ```javascript
 // You can choose as few arguments as you want
-.defines('update', () => { ... });
+.exposes('update', () => { ... });
 // Why not add a few more? The arguments can be ordered any way you like.
-.defines('delete', (callback, payload, context) => { ... });
+.exposes('delete', (callback, payload, context) => { ... });
 // If you repeat arguments, only the last one in the sequence has a value
-.defines('enchance', (actionId, callback, payload, payload, payload) => { ... });
+.exposes('enchance', (actionId, callback, payload, payload, payload) => { ... });
 ```
 
 ## Actions
