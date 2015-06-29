@@ -84,6 +84,88 @@ SomeStore.field('another-field').value(context, currentValue => currentValue.con
 // Will print an update revision count
 console.log(SomeStore.field('another-field').revision()); // Prints 1
 ```
+## Views
+### Integrating with Stores
+In a Conveyr web application, Views should get all application-level state from Stores. This means that when Store data changes, the Views should update. To create this interaction, we need to _bind_ Store Fields to Views using the either the `updates()` or `notifies()` function. Passing a React Component as an argument to `notifies()` will cause Store updates to invoke `forceUpdate()` on that React Component. Passing a React Component and a state variable name as arguments to `updates()` will cause Store updates to invoke `setState()` with updates for the indicated state variable.
+#### Traditional React Components
+In a traditional component, we need to put Store binding logic into the `componentDidMount()` function. Notice that we don't have unbind the fields fince Conveyr knows to only notify a React Component when its mounted.
+```javascript
+import React from 'react';
+
+import {SomeStore, SomeOtherStore} from './my-stores';
+
+export default React.createClass({
+    getInitialState() {
+        return {
+            foo: null
+        };
+    },
+    
+    componentDidMount() {
+        SomeStore.fields('some-field', 'some-other-field').notify(this);
+        SomeOtherStore.field('yet-another-field').notifies(this);
+        // Below we bing this field to the "foo" state variable
+        SomeOtherStore.field('one-more-field').updates(this, 'foo');
+    },
+    
+    render() {
+        return (
+            <div>
+                <label>Some Field:</label>
+                <p>{SomeStore.field('some-field').value()}</p>
+                <label>Some Other Field:</label>
+                <p>{SomeStore.field('some-other-field').value()}</p>
+                <label>Some Field:</label>
+                <p>{SomeOtherStore.field('yet-another-field').value()}</p>
+                <label>Foo:</label>
+                <p>{this.state.foo}</p>
+            </div>
+        );
+    }
+});
+```
+#### ES6-Style React Components
+In classes that extend `React.Component`, all you have to do is put the binding logic for Stores in the constructor. Otherwise, everything works identically to traditional React Components.
+```javascript
+import React from 'react';
+
+import {SomeStore, SomeOtherStore} from './my-stores';
+
+export default class MyComponent extends React.Component {
+    constructor() {
+        this.state = { foo: null };
+        this.props = {};
+        
+        SomeStore.fields('some-field', 'some-other-field').notify(this);
+        SomeOtherStore.field('yet-another-field').notifies(this);
+        // Below we bing this field to the "foo" state variable
+        SomeOtherStore.field('one-more-field').updates(this, 'foo');
+    },
+    
+    render() {
+        return (
+            <div>
+                <label>Some Field:</label>
+                <p>{SomeStore.field('some-field').value()}</p>
+                <label>Some Other Field:</label>
+                <p>{SomeStore.field('some-other-field').value()}</p>
+                <label>Some Field:</label>
+                <p>{SomeOtherStore.field('yet-another-field').value()}</p>
+                <label>Foo:</label>
+                <p>{this.state.foo}</p>
+            </div>
+        );
+    }
+}
+```
+### Why No React Mixin?
+A quote from the introductory post of React 0.13:
+> Unfortunately, we will not launch any mixin support for ES6 classes in React. That would defeat the purpose of only using idiomatic JavaScript concepts.<br><br>
+There is no standard and universal way to define mixins in JavaScript. In fact, several features to support mixins were dropped from ES6 today. There are a lot of libraries with different semantics. We think that there should be one way of defining mixins that you can use for any JavaScript class. React just making another doesn’t help that effort.
+
+The jury's out on this one: Mixins just don't seem likely to be part of React in future. This is why Conveyr simply offers a binding function - and that's it. If the React team comes up with a better way to accomplish view binding, rest assured that Conveyr implement it.
+
+For a more robust consideration of the above quote, check out [this article](https://medium.com/@dan_abramov/mixins-are-dead-long-live-higher-order-components-94a0d2f9e750).
 
 ## Services
 ### Creating Services
@@ -168,89 +250,6 @@ SomeOtherAction('some argument')
     .then(() => console.log('Aw yiss.'))
     .catch(err => console.error('Eeek! It did not work:', err));
 ```
-
-## Views
-### Integrating with Stores
-In a Conveyr web application, Views should get all application-level state from Stores. This means that when Store data changes, the Views should update. To create this interaction, we need to _bind_ Store Fields to Views using the either the `updates()` or `notifies()` function. Passing a React Component as an argument to `notifies()` will cause Store updates to invoke `forceUpdate()` on that React Component. Passing a React Component and a state variable name as arguments to `updates()` will cause Store updates to invoke `setState()` with updates for the indicated state variable.
-#### Traditional React Components
-In a traditional component, we need to put Store binding logic into the `componentDidMount()` function. Notice that we don't have unbind the fields fince Conveyr knows to only notify a React Component when its mounted.
-```javascript
-import React from 'react';
-
-import {SomeStore, SomeOtherStore} from './my-stores';
-
-export default React.createClass({
-    getInitialState() {
-        return {
-            foo: null
-        };
-    },
-    
-    componentDidMount() {
-        SomeStore.fields('some-field', 'some-other-field').notify(this);
-        SomeOtherStore.field('yet-another-field').notifies(this);
-        // Below we bing this field to the "foo" state variable
-        SomeOtherStore.field('one-more-field').updates(this, 'foo');
-    },
-    
-    render() {
-        return (
-            <div>
-                <label>Some Field:</label>
-                <p>{SomeStore.field('some-field').value()}</p>
-                <label>Some Other Field:</label>
-                <p>{SomeStore.field('some-other-field').value()}</p>
-                <label>Some Field:</label>
-                <p>{SomeOtherStore.field('yet-another-field').value()}</p>
-                <label>Foo:</label>
-                <p>{this.state.foo}</p>
-            </div>
-        );
-    }
-});
-```
-#### ES6-Style React Components
-In classes that extend `React.Component`, all you have to do is put the binding logic for Stores in the constructor. Otherwise, everything works identically to traditional React Components.
-```javascript
-import React from 'react';
-
-import {SomeStore, SomeOtherStore} from './my-stores';
-
-export default class MyComponent extends React.Component {
-    constructor() {
-        this.state = { foo: null };
-        this.props = {};
-        
-        SomeStore.fields('some-field', 'some-other-field').notify(this);
-        SomeOtherStore.field('yet-another-field').notifies(this);
-        // Below we bing this field to the "foo" state variable
-        SomeOtherStore.field('one-more-field').updates(this, 'foo');
-    },
-    
-    render() {
-        return (
-            <div>
-                <label>Some Field:</label>
-                <p>{SomeStore.field('some-field').value()}</p>
-                <label>Some Other Field:</label>
-                <p>{SomeStore.field('some-other-field').value()}</p>
-                <label>Some Field:</label>
-                <p>{SomeOtherStore.field('yet-another-field').value()}</p>
-                <label>Foo:</label>
-                <p>{this.state.foo}</p>
-            </div>
-        );
-    }
-}
-```
-### Why No React Mixin?
-A quote from the introductory post of React 0.13:
-> Unfortunately, we will not launch any mixin support for ES6 classes in React. That would defeat the purpose of only using idiomatic JavaScript concepts.<br><br>
-There is no standard and universal way to define mixins in JavaScript. In fact, several features to support mixins were dropped from ES6 today. There are a lot of libraries with different semantics. We think that there should be one way of defining mixins that you can use for any JavaScript class. React just making another doesn’t help that effort.
-
-The jury's out on this one: Mixins just don't seem likely to be part of React in future. This is why Conveyr simply offers a binding function - and that's it. If the React team comes up with a better way to accomplish view binding, rest assured that Conveyr implement it.
-
-For more robust consideration of the above quote, check out [this article](https://medium.com/@dan_abramov/mixins-are-dead-long-live-higher-order-components-94a0d2f9e750).
 
 ## Emitters
 Emitters have specifically been excluded from the Conveyr library because they are so simple to implement. All an Emitter truly needs to do is fire Actions when certain events occur. Take for example an Emitter that handles window resize events:
