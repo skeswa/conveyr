@@ -73,7 +73,7 @@ The `update()` function transforms the value of the field. This is the only func
 // Takes the "context" variable (obtained within a Service) as the first parameter
 // The second parameter is the mutator function - it simply takes the current value
 // of the field and returns a different version.
-SomeStore.field('some-field').value(context, currentValue => currentValue + 1);
+SomeStore.field('some-field').update(context, currentValue => currentValue + 1);
 ```
 Lastly, the `revision()` function returns the number of times, starting at 0, that the Store Field has been changed.
 ```javascript
