@@ -76,7 +76,7 @@ SomeOtherAction('some argument')
 
 ## Services
 ### Creating Services
-Services are the only parts of the application that can make changes to Stores. As such, when creating a Service, the `updates()` functions allows you to specify which Stores the Service can update. The `updates()` function takes Stores and/or Store Ids as arguments. The `exposes()` function attaches behavior logic to the Service by creating **Endpoints**. Endpoints are different operations that an Action can perform on the Service. Endpoints have an endpoint id and a handler function.
+Services are the only parts of the application that can make changes to Stores. As such, when creating a Service, the `updates()` functions allows you to specify which Stores the Service can update. The `updates()` function takes Stores and/or Store Ids as arguments. The `exposes()` function attaches behavior logic to the Service by creating **Endpoints**. Endpoints are different operations that can be performed within the purview of the Service. Endpoints are comprised of an endpoint id and a handler function.
 ```javascript
 import {Service} from 'conveyr';
 
