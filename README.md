@@ -44,6 +44,7 @@ import {SomeService} from './my-services';
 export const SomeAction = Action('some-action')
     // Either a service id or an actual service is passed to this function
     .calls(SomeService.endpoint('tickle'))
+    .calls(SomeOtherService.endpoint('woop'), args => { thing4: args.thing1 })
     // The payload function can either take a flat object map, or just a type.
     // (e.g. .sends(Number) or .sends({ type: Number, default: 3 }))
     .sends({
@@ -53,7 +54,9 @@ export const SomeAction = Action('some-action')
         // Fields of fully-qualified types are considered *optional* if 
         // they have defaults. Otherwise, all fields default to being required
         thing3: { type: String, default: 'woop' }
-    });
+    })
+    // Builds the action
+    .build();
 ```
 ### Using Actions
 Actions are simply functions and should be treated as such. Actions can be invoked with up to _one argument_. This argument is called the **payload** of the Action, and its format is specified by the `payload()` function (example above). If the payload format is specified, then Conveyr will perform validation on Action invocations to make sure the payload is correct.
@@ -106,16 +109,18 @@ export const SomeService = Service('some-service')
                 callback(response.problem);
             }
         });
-    });
+    })
+    // Builds the service
+    .build();
 ```
 The handler function passed to `exposes()` is **dependency injected**. This means that you can pick and choose what arguments to include in your handler function definition. For asynchronous operations, you must **specify a callback**. So all of the following examples would all be valid handler functions:
 ```javascript
 // You can choose as few arguments as you want
-.exposes('update', () => { ... });
+.exposes('update', () => { ... })
 // Why not add a few more? The arguments can be ordered any way you like.
-.exposes('delete', (callback, payload, context) => { ... });
+.exposes('delete', (callback, payload, context) => { ... })
 // If you repeat arguments, only the last one in the sequence has a value
-.exposes('enchance', (actionId, callback, payload, payload, payload) => { ... });
+.exposes('enchance', (actionId, callback, payload, payload, payload) => { ... })
 ```
 
 ## Stores
@@ -135,7 +140,9 @@ export const SomeStore = Store('some-store')
     .defines('some-other-field', {
         type: Object,
         default: { a: 1, b: 2, c: 3 }
-    });
+    })
+    // Builds the store
+    .build();
 ```
 ### Using Stores
 Stores are mostly read-only, and the only way to access their data is via its Store Fields. Store Fields can be selected with the `field()` function. The `field()` function takes only the Field's name as an argument:
