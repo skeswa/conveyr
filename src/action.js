@@ -1,5 +1,3 @@
-'use strict';
-
 /****************************** MODULE IMPORTS *******************************/
 
 import Map from 'core-js/es6/map';
@@ -18,12 +16,12 @@ import {
     InvalidParameterTypeError,
     EmptyParameterError,
     IdAlreadyExistsError,
-    InvalidServiceRefError,
+    InvalidServiceEndpointRefError,
     InvalidFieldMapTypeError,
     ActionPayloadValidationError,
     NotEnoughFieldsInFieldMapError,
     InvalidFieldMapDefaultError,
-    ActionInvocationWithoutServiceError
+    ActionInvocationWithoutServiceEndpointError
 } from './errors';
 
 
@@ -59,7 +57,6 @@ function actionPayloadSetter(types) {
         const type = types;
         payloadFields.push({
             type:       type,
-            typeName:   nameOfType(type),
             default:    undefined,
             name:       undefined,
             optional:   false
@@ -76,7 +73,6 @@ function actionPayloadSetter(types) {
                 if (isType(type)) {
                     payloadFields.push({
                         type:       type,
-                        typeName:   nameOfType(type),
                         default:    undefined,
                         name:       field,
                         optional:   false
@@ -85,7 +81,6 @@ function actionPayloadSetter(types) {
                     // If we're here, we're ttreating this like a fully qualified field
                     const payloadField = {
                         type:       type.type,
-                        typeName:   nameOfType(type.type),
                         default:    undefined,
                         name:       field,
                         optional:   false
@@ -111,7 +106,7 @@ function actionPayloadSetter(types) {
             throw NotEnoughFieldsInFieldMapError();
         }
     } else {
-        throw InvalidParameterTypeError('types', 'native javascript type or field type map');
+        throw InvalidParameterTypeError('types', 'Native Javascript Type or Field Type Map');
     }
     // Internalize the fields that we've gathered so far
     this.payloadFields = payloadFields;
@@ -119,14 +114,17 @@ function actionPayloadSetter(types) {
     return this.trigger;
 }
 
-// Sets the service of an action trigger
-function actionServiceSetter(serviceRef) {
-    if (isService(serviceRef)) {
-        this.service = serviceRef;
-    } else if (isServiceId(serviceRef)) {
-        this.service = getService(serviceRef);
+// Sets the endpoint of an action trigger
+function actionServiceEndpointSetter(serviceEndpointRef) {
+    console.log(serviceEndpointRef, isObject(serviceEndpointRef), serviceEndpointRef.hasOwnProperty('__service'), isService(serviceEndpointRef.service), serviceEndpointRef.hasOwnProperty('__endpointId'));
+    if (isObject(serviceEndpointRef) &&
+        isService(serviceEndpointRef.__service) &&
+        serviceEndpointRef.hasOwnProperty('__endpointId')) {
+        // Sets the internal service endpoint ref
+        this.service = serviceEndpointRef.__service;
+        this.endpointId = serviceEndpointRef.__endpointId;
     } else {
-        throw InvalidServiceRefError();
+        throw InvalidServiceEndpointRefError();
     }
     // Return the trigger for chainability
     return this.trigger;
@@ -144,13 +142,13 @@ export class ActionResult {
 
 function ActionTrigger(payload) {
     // Exit immediately if we have no service
-    if (!isService(this.service)) {
-        throw ActionInvocationWithoutServiceError(this.actionId);
+    if (!isService(this.service) || !isString(this.endpointId)) {
+        throw ActionInvocationWithoutServiceEndpointError(this.actionId);
     }
     // Only validate the payload if we have validation rules in place
     if (this.payloadFields) {
         // Exit immediately if payload is null
-        if (payload === null || payload === undefined) throw InvalidParameterTypeError('payload', 'non-null & non-undefined');
+        if (payload === null || payload === undefined) throw InvalidParameterTypeError('payload', 'Non-null & not Undefined');
         // Use loop to check if each field is valid
         let currPayloadField;
         for (let i = 0; i < this.payloadFields.length; i++) {
@@ -158,20 +156,20 @@ function ActionTrigger(payload) {
             // Root fields should be dealt with in a different way
             if ((currPayloadField.name === undefined || currPayloadField.name === null) &&
                 !isOfType(payload, currPayloadField.type)) {
-                throw InvalidParameterTypeError('payload', currPayloadField.typeName);
+                throw InvalidParameterTypeError('payload', nameOfType(currPayloadField));
             }
             // Verify that field exists in payload
             if (!payload.hasOwnProperty(currPayloadField.name)) {
-                throw ActionPayloadValidationError(currPayloadField.name, currPayloadField.typeName);
+                throw ActionPayloadValidationError(currPayloadField.name, nameOfType(currPayloadField));
             }
             // Make sure the type of the value matches
             if (!isOfType(payload[currPayloadField.name], currPayloadField.type)) {
-                throw ActionPayloadValidationError(currPayloadField.name, currPayloadField.typeName);
+                throw ActionPayloadValidationError(currPayloadField.name, nameOfType(currPayloadField));
             }
         }
     }
     // Invoke the service handler, and return the service handler promise
-    return this.service.__invokeHandler(this.trigger, this.actionId, payload);
+    return this.service.service.__invokeHandler(this.endpointId, this.trigger, this.actionId, payload);
 }
 
 /****************************** MODULE EXPORTS *******************************/
@@ -181,12 +179,14 @@ export function createAction(actionId) {
     if (!isString(actionId)) throw InvalidParameterTypeError('actionId', 'String');
     if (isEmpty(actionId)) throw EmptyParameterError('actionId');
     if (actionTriggerMap.has(actionId)) throw IdAlreadyExistsError(actionId);
+
     // Create a plain state object to represent as "this" within the trigger
     const actionTriggerState = {
-        actionId:       actionId,
-        service:        undefined,
-        payloadFields:  undefined,
-        trigger:        undefined
+        actionId:           actionId,
+        service:            undefined,
+        endpointId:         undefined,
+        payloadFields:      undefined,
+        trigger:            undefined
     };
     // Create a new copy of the trigger function
     const trigger = ActionTrigger.bind(actionTriggerState);
@@ -194,7 +194,7 @@ export function createAction(actionId) {
     actionTriggerState.trigger = trigger;
     // Now attach the public methods of an action trigger
     trigger.sends = actionPayloadSetter.bind(actionTriggerState);
-    trigger.calls = actionServiceSetter.bind(actionTriggerState);
+    trigger.calls = actionServiceEndpointSetter.bind(actionTriggerState);
     // Register the trigger and the action id
     actionTriggerMap.set(actionId, trigger);
     // Now, we need to return the trigger

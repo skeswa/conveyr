@@ -31,11 +31,11 @@ describe('action.calls(...)', () => {
 
     it('has validation', () => {
         const serviceTestAction1 = Action('service-test-action-1');
-        const serviceTestService1 = Service('service-test-service-1');
+        const serviceTestService1 = Service('service-test-service-1').exposes('fetch', () => callback());
 
-        assert.throw(() => serviceTestAction1.calls('asd'), undefined, undefined, 'service() should fail for nonexistent services');
+        assert.throw(() => serviceTestAction1.calls(), undefined, undefined, 'service() should fail for nonexistent services');
         assert.throw(() => serviceTestAction1.calls({}), undefined, undefined, 'service() should fail for nonexistent services');
-        assert.doesNotThrow(() => serviceTestAction1.calls(serviceTestService1), undefined, undefined, 'service() should succeed for legit services');
+        assert.doesNotThrow(() => serviceTestAction1.calls(serviceTestService1.endpoint('fetch')), undefined, undefined, 'service() should succeed for legit services');
     });
 
     it('takes both serviceIds and services', () => {

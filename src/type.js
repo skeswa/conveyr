@@ -19,7 +19,7 @@ export const isEmpty = (x) => {
     return (!x || 0 === x.length);
 };
 
-export const isType = (x) => {
+export const isNativeType = (x) => {
     return (
         x === Array     ||
         x === Object    ||
@@ -74,11 +74,12 @@ export const nameOfType = (x) => {
     case Boolean:
         return 'Boolean';
     default:
-       throw new Error(`Name of type "${x} could not be resolved`);
+        throw new Error(`Name of type "${x}" could not be resolved`);
     }
 };
 
 export const isOfType = (x, type) => {
+    // Otherwise, use a strict checker
     let checker;
     switch(type) {
     case Array:
@@ -100,7 +101,12 @@ export const isOfType = (x, type) => {
         checker = isBoolean;
         break;
     default:
-        throw new Error(`Type "${type}" could not be resolved`);
+        if (isFunction(type)) {
+            checker = value => value instanceof type;
+            break;
+        } else {
+            throw new Error(`Type "${type}" could not be resolved`);
+        }
     }
     return checker(x);
 };

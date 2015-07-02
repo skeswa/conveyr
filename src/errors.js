@@ -26,10 +26,10 @@ export function IdAlreadyExistsError(id) {
     );
 }
 
-export function InvalidServiceRefError() {
+export function InvalidServiceEndpointRefError() {
     return new Error(
-        `The provided service reference was invalid. ` +
-        `Please double-check that the service reference for this action exists.`
+        `The provided service endpoint reference was invalid. ` +
+        `Please double-check that the service endpoint reference for this action exists.`
     );
 }
 
@@ -68,10 +68,24 @@ export function InvalidFieldMapTypeError(fieldName) {
     );
 }
 
+export function InvalidFieldTypeError(fieldName) {
+    return new Error(
+        `Field "${fieldName}" is of an invalid type. ` +
+        `The type of a field must either be a native javascript type or a fully qualified type object. ` +
+        `Fully qualified field types require a valid type property.`
+    );
+}
+
 export function InvalidFieldMapDefaultError(fieldName) {
     return new Error(
         `Field "${fieldName}" of provided field map specifies an invalid default for its declared type. ` +
         `The default value of a field must match the type of that field.`
+    );
+}
+
+export function InvalidFieldDefaultError(fieldName) {
+    return new Error(
+        `Field "${fieldName}" specifies an invalid default value for its field type.`
     );
 }
 
@@ -82,9 +96,43 @@ export function ActionPayloadValidationError(fieldName, correctType) {
     );
 }
 
-export function ActionInvocationWithoutServiceError(actionId) {
+export function ActionInvocationWithoutServiceEndpointError(actionId) {
     return new Error(
-        `Could not invoke Action with id "${actionId}" because it is not bound to a Service. ` +
-        `Actions must be bound to Services in order to function as intended.`
+        `Could not invoke Action with id "${actionId}" because it is not bound to a Service Endpoint. ` +
+        `Actions must be bound to Service Endpoints in order to function.`
+    );
+}
+
+export function StoreWriteAccessDeniedError(storeId, fieldName) {
+    return new Error(
+        `Could not update the "${fieldName}" field of Store with id "${storeId}" due to a lack of permission. ` +
+        `Only Services that specify the Store with id "${storeId}" in the "updates()" function can use the "update()" function` +
+        `on one of its fields. Also, make sure you are passing in the context variable as the *first* argument of the update function.`
+    );
+}
+
+export function InvalidMutatorResultError(storeId, fieldName, correctType, incorrectValue) {
+    return new Error(
+        `The resulting value of the provided mutator function incorrect. ` +
+        `The "${fieldName}" field of Store with id "${storeId}" is of type "${type}". ` +
+        `The resulting value of the mutator function was ${incorrectValue}.`
+    );
+}
+
+export function InvalidStoreFieldSubscriberError() {
+    return new Error(
+        `Valid Store Field subscribers must have an isMounted(), setState() and forceUpdate() function.`
+    );
+}
+
+export function NoSuchFieldError(fieldName, storeId) {
+    return new Error(
+        `"${fieldName}" is not the name any Field belonging to the Store with the id "${storeId}".`
+    );
+}
+
+export function NoSuchServiceEndpointError(endpointId, serviceId) {
+    return new Error(
+        `"${endpointId}" is not the id any Endpoint belonging to the Service with the id "${serviceId}".`
     );
 }

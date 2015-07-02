@@ -1,5 +1,3 @@
-'use strict';
-
 /****************************** MODULE IMPORTS *******************************/
 
 import Map from 'core-js/es6/map';
@@ -11,7 +9,8 @@ import {
     EmptyParameterError,
     IdAlreadyExistsError,
     InvalidStoreRefsError,
-    MissingCallbackError
+    MissingCallbackError,
+    NoSuchServiceEndpointError
 } from './errors';
 
 import {isStoreId, getStore, generateMutatorContext, isStore} from './store';
@@ -28,13 +27,19 @@ const   serviceMap              = new Map();
 
 /***************************** TYPE DECLARATIONS *****************************/
 
+class ServiceEndpoint {
+    constructor(indices, handler) {
+        this.__indices = indices;
+        this.__handler = handler;
+    }
+}
+
 class Service {
     constructor(serviceId) {
         this.__serviceId        = serviceId;
         this.__stores           = undefined;
-        this.__handler          = undefined;
-        this.__handlerIndices   = undefined;
         this.__mutatorContext   = generateMutatorContext();
+        this.__endpointMap      = new Map();
         // Bind the all private class methods
         this.__unregisterAsMutator      = this.__unregisterAsMutator.bind(this);
         this.__registerAsMutator        = this.__registerAsMutator.bind(this);
@@ -42,75 +47,77 @@ class Service {
         this.__compileHandlerArguments  = this.__compileHandlerArguments.bind(this);
         this.__resolveHandlerArguments  = this.__resolveHandlerArguments.bind(this);
         // Bind the all public class methods
-        this.updates = this.updates.bind(this);
-        this.invokes = this.invokes.bind(this);
+        this.updates    = this.updates.bind(this);
+        this.exposes    = this.exposes.bind(this);
+        this.endpoint   = this.endpoint.bind(this);
     }
 
     /**************************** PRIVATE METHODS ****************************/
 
     // Unregisters this service a mutator of the stores listed in this.__storeIds
     __unregisterAsMutator() {
-        if (this.__handler &&
-            this.__handlerIndices &&
-            this.__stores &&
+        if (this.__stores &&
             this.__stores.length > 0) {
             // Unregister from all the stores
             let i, currStore;
             for (i = 0; i < this.__stores.length; i++) {
                 currStore = this.__stores[i];
-                currStore.unregisterMutatorContext(this.__mutatorContext);
+                currStore.__unregisterMutatorContext(this.__mutatorContext);
             }
         }
     }
 
     // Registers this service a mutator of the stores listed in this.__storeIds
     __registerAsMutator() {
-        if (this.__handler &&
-            this.__handlerIndices &&
-            this.__stores &&
+        if (this.__stores &&
             this.__stores.length > 0) {
             // Register with all the stores
             let i, currStore;
             for (i = 0; i < this.__stores.length; i++) {
                 currStore = this.__stores[i];
-                currStore.registerMutatorContext(this.__mutatorContext);
+                currStore.__registerMutatorContext(this.__mutatorContext);
             }
         }
     }
 
     // Called by action triggers to invoke handler function
-    __invokeHandler(trigger, actionId, payload) {
-        if (this.__handler &&
-            this.__handlerIndices) {
+    __invokeHandler(endpointId, trigger, actionId, payload) {
+        if (this.__endpointMap.has(endpointId)) {
+            const {indices, handler} = this.__endpointMap.get(endpointId);
             // Create a promise that should be resolved by the handler
             return new Promise((resolve, reject) => {
-                this.__handler.apply(this, this.__compileHandlerArguments(trigger, actionId, payload, resolve, reject));
+                try {
+                    handler.apply(this, this.__compileHandlerArguments(indices, trigger, actionId, payload, resolve, reject));
+                } catch(err) {
+                    return reject(err);
+                }
+                // If there is no callback, execute synchronously
+                if (indices.done === -1) {
+                    return resolve();
+                }
             });
         } else {
-            // Return a promise that immediately exists due to a non-existent handler
-            return Promise.reject(
-                `Service with id "${this.__serviceId}" has no handler. ` +
-                `In order for an action to invoke a Service, that Service must have a handler.`
-            );
+            // Return a promise that immediately exists due to a non-existent endpoint
+            return Promise.reject(`Service with id "${this.__serviceId}" has no endpoint with id "${endpointId}".`);
         }
     }
 
     // Puts args together for handler function
-    __compileHandlerArguments(trigger, actionId, payload, resolve, reject) {
-        const args = new Array(this.__handlerIndices.total);
-        if (this.__handlerIndices.context !== -1) {
-            args[this.__handlerIndices.context] = this.__mutatorContext;
+    __compileHandlerArguments(indices, trigger, actionId, payload, resolve, reject) {
+        const args = new Array(indices.total);
+        if (indices.context !== -1) {
+            args[indices.context] = this.__mutatorContext;
         }
-        if (this.__handlerIndices.action !== -1) {
-            args[this.__handlerIndices.action] = trigger;
+        if (indices.action !== -1) {
+            args[indices.action] = trigger;
         }
-        if (this.__handlerIndices.actionId !== -1) {
-            args[this.__handlerIndices.actionId] = actionId;
+        if (indices.actionId !== -1) {
+            args[indices.actionId] = actionId;
         }
-        if (this.__handlerIndices.payload !== -1) {
-            args[this.__handlerIndices.payload] = payload;
+        if (indices.payload !== -1) {
+            args[indices.payload] = payload;
         }
-        if (this.__handlerIndices.done !== -1) {
+        if (indices.done !== -1) {
             // Start the callback timeout timer
             const timeoutTimerRef = setTimeout(() => {
                 reject(
@@ -119,7 +126,7 @@ class Service {
                 );
             }, HANDLER_RESPONSE_TIMEOUT);
             // Build the callback
-            args[this.__handlerIndices.done] = (err) => {
+            args[indices.done] = (err) => {
                 // Clear the timeout timer
                 clearTimeout(timeoutTimerRef);
                 // Promise resolution logic
@@ -215,17 +222,33 @@ class Service {
         return this;
     }
 
-    invokes(handler) {
+    exposes(endpointId, handler) {
+        // Basic empty checks
+        if (!isString(endpointId)) throw InvalidParameterTypeError('endpointId', 'String');
+        if (isEmpty(endpointId)) throw EmptyParameterError('endpointId');
+        // Exit immediately if this field has already been defined
+        if (this.__endpointMap.has(endpointId)) {
+            throw IdAlreadyExistsError(endpointId);
+        }
         if (!isFunction(handler)) throw InvalidParameterTypeError('handler', 'function');
         // Re-calculate indices
         const indices = this.__resolveHandlerArguments(handler);
-        // Done is required
-        if (indices.done === -1) throw MissingCallbackError();
-        // Sets the new handler & indices
-        this.__handlerIndices = indices;
-        this.__handler = handler;
+        // Create the endpoint
+        this.__endpointMap.set(endpointId, new ServiceEndpoint(indices, handler));
         // Return this service for chaining
         return this;
+    }
+
+    endpoint(endpointId) {
+        if (!this.__endpointMap.has(endpointId)) {
+            throw NoSuchServiceEndpointError(endpointId, this.__serviceId);
+        } else {
+            // Return a service endpoint
+            return {
+                __service:      this,
+                __endpointId:   endpointId
+            };
+        }
     }
 }
 
@@ -254,4 +277,8 @@ export function isService(service) {
 
 export function getService(serviceId) {
     return serviceMap.get(serviceId);
+}
+
+export function isEndpointId(endpointId) {
+    return serviceMap.has(serviceId);
 }
