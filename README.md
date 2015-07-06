@@ -47,7 +47,7 @@ export const SomeAction = Action('some-action')
     .calls(SomeOtherService.endpoint('woop'), args => { thing4: args.thing1 })
     // The payload function can either take a flat object map, or just a type.
     // (e.g. .sends(Number) or .sends({ type: Number, default: 3 }))
-    .sends({
+    .accepts({
         thing1: Array,
         thing2: Number,
         // Below is an example of a fully-qualified type.
@@ -72,7 +72,7 @@ Actions also return a [Promise](http://www.html5rocks.com/en/tutorials/es6/promi
 ```javascript
 import {SomeOtherAction} from './my-actions';
 
-SomeOtherAction('some argument')
+SomeOtherAction('some payload')
     .then(() => console.log('Aw yiss.'))
     .catch(err => console.error('Eeek! It did not work:', err));
 ```
@@ -192,7 +192,9 @@ export default React.createClass({
     },
     
     componentDidMount() {
+        // This is how you subscribe to many fields at once
         SomeStore.fields('some-field', 'some-other-field').notify(this);
+        // Below we subscribe to a single field
         SomeOtherStore.field('yet-another-field').notifies(this);
         // Below we bing this field to the "foo" state variable
         SomeOtherStore.field('one-more-field').updates(this, 'foo');
