@@ -30,17 +30,17 @@ From session information to the results of a search, Stores pass state along to 
 
 ## Actions
 ### Creating Actions
-Actions are created with the `Action()` function. The `Action()` function takes Action Id string as its only argument. Action Ids represents Actions, and, appropriately, should be unique. The `Action()` function returns an **Action**. The `calls()` function of an Action specifies the Service Endpoint that will be called when the Action is invoked. The `sends()` function of an Action specifies the structure of the data that should be passed to the Action when it is invoked.
+Actions are created with the `Action()` function. The `Action()` function takes Action Id string as its only argument. Action Ids represents Actions, and, appropriately, should be unique. The `Action()` function returns an **Action**. The `calls()` function of an Action specifies the Service Endpoint that will be called when the Action is invoked. The `accepts()` function of an Action specifies the structure of the data that should be passed to the Action when it is invoked.
 ```javascript
 import {Action} from 'conveyr';
 import {SomeService} from './my-services';
 
 export const SomeAction = Action('some-action')
-    // Either a service id or an actual service is passed to this function
+    // A service enpoint is passed to this function
     .calls(SomeService.tickle)
-    .calls(SomeOtherService.woop), args => { thing4: args.thing1 })
-    // The payload function can either take a flat object map, or just a type.
-    // (e.g. .sends(Number) or .sends({ type: Number, default: 3 }))
+    .calls(SomeOtherService.woop, args => args.thing1)
+    // The accepts() function can either take a flat object map, or just a type.
+    // (e.g. .accepts(Number) or .accepts({ type: Number, default: 3 }))
     .accepts({
         thing1: Array,
         thing2: Number,
@@ -53,7 +53,7 @@ export const SomeAction = Action('some-action')
     .create();
 ```
 ### Using Actions
-Actions are simply functions and should be treated as such. Actions can be invoked with up to _one argument_. This argument is called the **payload** of the Action, and its format is specified by the `payload()` function (example above). If the payload format is specified, then Conveyr will perform validation on Action invocations to make sure the payload is correct.
+Actions are simply functions and should be treated as such. Actions can be invoked with up to _one argument_. This argument is called the **payload** of the Action, and its format is specified by the `accepts()` function (example above). If the payload format is specified, then Conveyr will perform validation on Action invocations to make sure the payload is correct.
 ```javascript
 import {SomeAction} from './my-actions';
 
@@ -129,11 +129,11 @@ import {SomeStore} from './my-stores';
 // Selects the "foo" field
 SomeStore.foo;
 // Also selects the "foo" field
-SomeStore('foo')
+SomeStore('foo');
 // Selects the "foo-bar" field
 SomeStore['foo-bar'];
 // Also selects the "foo-bar" field
-SomeStore('foo-bar')
+SomeStore('foo-bar');
 ```
 Once selected, Store Fields have three principal functions: `value()`, `update()` and `revision()`. The `value()` function simply returns the current value of the field:
 ```javascript
