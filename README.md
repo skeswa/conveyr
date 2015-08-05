@@ -28,12 +28,6 @@ Services are responsible for permuting application state, often with aid of exte
 **[Stores](https://github.com/skeswa/conveyr/blob/develop/README.md#stores) encapsulate _all_ of your application's state.**  
 From session information to the results of a search, Stores pass state along to views, and they alone determine what views can render.  
 
-**[Views](https://github.com/skeswa/conveyr/blob/develop/README.md#views) present application state to the user.**  
-Its as simple as that. By binding to Stores, Views can re-render themselves whenever application state changes. The simplicity of this paradigm makes application-wide UI changes a cinch. Furthermore, Views often create Actions based on user interactions.  
-
-**[Emitters](https://github.com/skeswa/conveyr/blob/develop/README.md#emitters) turn external events into Actions.**   
-Every application has important interactions that occur without the user causing them. For instance, consider the case where a web application must react to the window resizing: the application needs to bind a behavior to that event to resize and redaw itself. Emitters are how Conveyr-based applications adapt to external events like these.
-
 ## Actions
 ### Creating Actions
 Actions are created with the `Action()` function. The `Action()` function takes Action Id string as its only argument. Action Ids represents Actions, and, appropriately, should be unique. The `Action()` function returns an **Action**. The `calls()` function of an Action specifies the Service Endpoint that will be called when the Action is invoked. The `sends()` function of an Action specifies the structure of the data that should be passed to the Action when it is invoked.
@@ -56,7 +50,7 @@ export const SomeAction = Action('some-action')
         thing3: { type: String, default: 'woop' }
     })
     // Builds the action
-    .build();
+    .create();
 ```
 ### Using Actions
 Actions are simply functions and should be treated as such. Actions can be invoked with up to _one argument_. This argument is called the **payload** of the Action, and its format is specified by the `payload()` function (example above). If the payload format is specified, then Conveyr will perform validation on Action invocations to make sure the payload is correct.
@@ -79,48 +73,35 @@ SomeOtherAction('some payload')
 
 ## Services
 ### Creating Services
-Services are the only parts of the application that can make changes to Stores. As such, when creating a Service, the `updates()` functions allows you to specify which Stores the Service can update. The `updates()` function takes Stores and/or Store Ids as arguments. The `exposes()` function attaches behavior logic to the Service by creating **Endpoints**. Endpoints are different operations that can be performed within the purview of the Service. Endpoints are comprised of an endpoint id and a handler function.
+Services are the only parts of the application that can make changes to Stores. The `exposes()` function attaches behavior logic to the Service by creating **Endpoints**. Endpoints are different operations that can be performed within the purview of the Service. Endpoints are comprised of an endpoint id and a handler function.
 ```javascript
 import {Service} from 'conveyr';
 
 import {SomeStore} from './my-stores';
 
 export const SomeService = Service('some-service')
-    // The `updates()` function takes the list of stores or store ids
-    // that Store will affect
-    .updates(SomeStore, 'some-other-store')
     // An defines an endpoint with its handler
-    .exposes('tickle', function(
-        context,    /* Token used for Store manipulation */
-        actionId,   /* The id of the action that invoked this service */
-        action,     /* The action that invoked this service */
-        payload,    /* The data passed in by the action */
-        callback,   /* The callback to finish async operations */
-    ) {
+    .exposes('tickle', function(context) {
+        let {action, payload, update, succeed, fail} = context;
+        // Anatomy of Context:
+        // - context.action:    The action that invoked this service
+        // - context.payload:   The data passed in by the action
+        // - context.update:    The updater function allows for Store Fields to be updated
+        // - context.succeed:   Signals that this Endpoint call succeeded
+        // - context.fail:      Signals that this Endpoint call failed
         tickleTheBackend((response) => {
             if (response.successful) {
                 // The "context" variable enables mutation of the store's fields
-                SomeStore.field('some-field').update(context, (currentUsers) => {
-                    return currentUsers.concat(res.body);
-                });
+                update(SomeStore.field('some-field'), currentUsers => currentUsers.concat(res.body));
                 // Signals that this service has finished executing
-                callback();
+                succeed();
             } else {
-                callback(response.problem);
+                fail(response.problem);
             }
         });
     })
     // Builds the service
-    .build();
-```
-The handler function passed to `exposes()` is **dependency injected**. This means that you can pick and choose what arguments to include in your handler function definition. For asynchronous operations, you must **specify a callback**. So all of the following examples would all be valid handler functions:
-```javascript
-// You can choose as few arguments as you want
-.exposes('update', () => { ... })
-// Why not add a few more? The arguments can be ordered any way you like.
-.exposes('delete', (callback, payload, context) => { ... })
-// If you repeat arguments, only the last one in the sequence has a value
-.exposes('enchance', (actionId, callback, payload, payload, payload) => { ... })
+    .create();
 ```
 
 ## Stores
@@ -132,17 +113,12 @@ on stores.
 import {Store} from 'conveyr';
 
 export const SomeStore = Store('some-store')
-    // defines() accepts a simple name-type pair
-    .defines('some-field', Number)
-    // Types should be either native javascript types...
-    .defines('another-field', Array)
-    // ...or fully-qualified types as shown below
-    .defines('some-other-field', {
-        type: Object,
-        default: { a: 1, b: 2, c: 3 }
-    })
+    // defines() a field
+    .defines('some-field')
+    // Fields can also specify defaults
+    .defines('one-more-field', { a: 1, b: 2, c: 3 })
     // Builds the store
-    .build();
+    .create();
 ```
 ### Using Stores
 Stores are mostly read-only, and the only way to access their data is via its Store Fields. Store Fields can be selected with the `field()` function. The `field()` function takes only the Field's name as an argument:
@@ -157,98 +133,20 @@ Once selected, Store Fields have three principal functions: `value()`, `update()
 // Prints the value of the "some-other-field" field
 console.log(SomeStore.field('some-other-field').value());
 ```
-The `update()` function transforms the value of the field. This is the only function that can change the state of a Store Field. The `update()` function needs a context variable to work - this can only be obtained within a Service handler function (discussed below).
-```javascript
-// Changes the value of the "some-field" field
-// Takes the "context" variable (obtained within a Service) as the first parameter
-// The second parameter is the mutator function - it simply takes the current value
-// of the field and returns a different version.
-SomeStore.field('some-field').update(context, currentValue => currentValue + 1);
-```
 Lastly, the `revision()` function returns the number of times, starting at 0, that the Store Field has been changed.
 ```javascript
 // Prints how many times the "another-field" field has changed
-console.log(SomeStore.field('another-field').revision()); // Prints 0
-// This will update the value of another-field
-SomeStore.field('another-field').value(context, currentValue => currentValue.concat('lol'));
-// Will print an update revision count
-console.log(SomeStore.field('another-field').revision()); // Prints 1
+console.log(SomeStore.field('another-field').revision());
 ```
-## Views
-### Integrating with Stores
-In a Conveyr web application, Views should get all application-level state from Stores. This means that when Store data changes, the Views should update. To create this interaction, we need to _bind_ Store Fields to Views using the either the `updates()` or `notifies()` function. Passing a React Component as an argument to `notifies()` will cause Store updates to invoke `forceUpdate()` on that React Component. Passing a React Component and a state variable name as arguments to `updates()` will cause Store updates to invoke `setState()` with updates for the indicated state variable.
-#### Traditional React Components
-In a traditional component, we need to put Store binding logic into the `componentDidMount()` function. Notice that we don't have unbind the fields fince Conveyr knows to only notify a React Component when its mounted.
+### Subscribing to Store Fields
+To be notified when a Store Field changes, use either the `updates()` or `notifies()` functions. Passing a React Component as an argument to `notifies()` will cause Store updates to invoke `forceUpdate()` on that Component. Passing a function instead of a React Component will simply invoke the function when the field changes instead. Passing a React Component and a state variable name as arguments to `updates()` will cause Store updates to invoke `setState()` with updates for the indicated state variable. 
 ```javascript
-import React from 'react';
-
-import {SomeStore, SomeOtherStore} from './my-stores';
-
-export default React.createClass({
-    getInitialState() {
-        return {
-            foo: null
-        };
-    },
-    
-    componentDidMount() {
-        // This is how you subscribe to many fields at once
-        SomeStore.fields('some-field', 'some-other-field').notify(this);
-        // Below we subscribe to a single field
-        SomeOtherStore.field('yet-another-field').notifies(this);
-        // Below we bing this field to the "foo" state variable
-        SomeOtherStore.field('one-more-field').updates(this, 'foo');
-    },
-    
-    render() {
-        return (
-            <div>
-                <label>Some Field:</label>
-                <p>{SomeStore.field('some-field').value()}</p>
-                <label>Some Other Field:</label>
-                <p>{SomeStore.field('some-other-field').value()}</p>
-                <label>Some Field:</label>
-                <p>{SomeOtherStore.field('yet-another-field').value()}</p>
-                <label>Foo:</label>
-                <p>{this.state.foo}</p>
-            </div>
-        );
-    }
-});
-```
-#### ES6-Style React Components
-In classes that extend `React.Component`, all you have to do is put the binding logic for Stores in the constructor. Otherwise, everything works identically to traditional React Components.
-```javascript
-import React from 'react';
-
-import {SomeStore, SomeOtherStore} from './my-stores';
-
-export default class MyComponent extends React.Component {
-    constructor() {
-        this.state = { foo: null };
-        this.props = {};
-        
-        SomeStore.fields('some-field', 'some-other-field').notify(this);
-        SomeOtherStore.field('yet-another-field').notifies(this);
-        // Below we bing this field to the "foo" state variable
-        SomeOtherStore.field('one-more-field').updates(this, 'foo');
-    },
-    
-    render() {
-        return (
-            <div>
-                <label>Some Field:</label>
-                <p>{SomeStore.field('some-field').value()}</p>
-                <label>Some Other Field:</label>
-                <p>{SomeStore.field('some-other-field').value()}</p>
-                <label>Some Field:</label>
-                <p>{SomeOtherStore.field('yet-another-field').value()}</p>
-                <label>Foo:</label>
-                <p>{this.state.foo}</p>
-            </div>
-        );
-    }
-}
+// This is how you subscribe to many fields at once
+SomeStore.fields('some-field', 'some-other-field').notify(this);
+// Below we subscribe to a single field
+SomeOtherStore.field('yet-another-field').notifies(this);
+// Below we bing this field to the "foo" state variable
+SomeOtherStore.field('one-more-field').updates(this, 'foo');
 ```
 ### Why No React Mixin?
 A quote from the introductory post of React 0.13:
@@ -258,24 +156,6 @@ There is no standard and universal way to define mixins in JavaScript. In fact, 
 The jury's out on this one: Mixins just don't seem likely to be part of React in future. This is why Conveyr simply offers a binding function - and that's it. If the React team comes up with a better way to accomplish view binding, rest assured that Conveyr implement it.
 
 For a more robust consideration of the above quote, check out [this article](https://medium.com/@dan_abramov/mixins-are-dead-long-live-higher-order-components-94a0d2f9e750).
-
-## Emitters
-Emitters have specifically been excluded from the Conveyr library because they are so simple to implement. All an Emitter truly needs to do is fire Actions when certain events occur. Take for example an Emitter that handles window resize events:
-```javascript
-import {SomeWindowResizeAction} from './my-actions';
-
-if (window.attachEvent) {
-    window.attachEvent('onresize', SomeWindowResizeAction);
-} else if (window.addEventListener) {
-    window.addEventListener('resize', SomeWindowResizeAction, true);
-} else {
-    // The browser does not support Javascript event binding
-    alert('Uh, dude, we\'re going to get you a better browser');
-    // Save this peculiar user from him/herself
-    window.location.href = 'https://www.mozilla.org/en-US/firefox/new/';
-}
-```
-As you can see above, nobody _really_ needs any help adding Emitters to their application. Now go forth and emit all the things!
 
 ## Todos
 * [x] Actions
