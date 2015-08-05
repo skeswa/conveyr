@@ -37,8 +37,8 @@ import {SomeService} from './my-services';
 
 export const SomeAction = Action('some-action')
     // Either a service id or an actual service is passed to this function
-    .calls(SomeService.endpoint('tickle'))
-    .calls(SomeOtherService.endpoint('woop'), args => { thing4: args.thing1 })
+    .calls(SomeService.tickle)
+    .calls(SomeOtherService.woop), args => { thing4: args.thing1 })
     // The payload function can either take a flat object map, or just a type.
     // (e.g. .sends(Number) or .sends({ type: Number, default: 3 }))
     .accepts({
@@ -114,9 +114,10 @@ import {Store} from 'conveyr';
 
 export const SomeStore = Store('some-store')
     // defines() a field
-    .defines('some-field')
+    .defines('foo')
+    .defines('hello')
     // Fields can also specify defaults
-    .defines('one-more-field', { a: 1, b: 2, c: 3 })
+    .defines('foo-bar', { a: 1, b: 2, c: 3 })
     // Builds the store
     .create();
 ```
@@ -125,28 +126,34 @@ Stores are mostly read-only, and the only way to access their data is via its St
 ```javascript
 import {SomeStore} from './my-stores';
 
-// Selects the "some-other-field" field
-SomeStore.field('some-other-field');
+// Selects the "foo" field
+SomeStore.foo;
+// Also selects the "foo" field
+SomeStore('foo')
+// Selects the "foo-bar" field
+SomeStore['foo-bar'];
+// Also selects the "foo-bar" field
+SomeStore('foo-bar')
 ```
 Once selected, Store Fields have three principal functions: `value()`, `update()` and `revision()`. The `value()` function simply returns the current value of the field:
 ```javascript
 // Prints the value of the "some-other-field" field
-console.log(SomeStore.field('some-other-field').value());
+console.log(SomeStore.foo.value());
 ```
 Lastly, the `revision()` function returns the number of times, starting at 0, that the Store Field has been changed.
 ```javascript
 // Prints how many times the "another-field" field has changed
-console.log(SomeStore.field('another-field').revision());
+console.log(SomeStore('foo-bar').revision());
 ```
 ### Subscribing to Store Fields
 To be notified when a Store Field changes, use either the `updates()` or `notifies()` functions. Passing a React Component as an argument to `notifies()` will cause Store updates to invoke `forceUpdate()` on that Component. Passing a function instead of a React Component will simply invoke the function when the field changes instead. Passing a React Component and a state variable name as arguments to `updates()` will cause Store updates to invoke `setState()` with updates for the indicated state variable. 
 ```javascript
-// This is how you subscribe to many fields at once
-SomeStore.fields('some-field', 'some-other-field').notify(this);
 // Below we subscribe to a single field
-SomeOtherStore.field('yet-another-field').notifies(this);
+SomeStore.foo.notifies(this);
+// This is how you subscribe to many fields at once
+SomeOtherStore('some-field', 'some-other-field').notify(this);
 // Below we bing this field to the "foo" state variable
-SomeOtherStore.field('one-more-field').updates(this, 'foo');
+SomeOtherStore('one-more-field').updates(this, 'foo');
 ```
 ### Why No React Mixin?
 A quote from the introductory post of React 0.13:
