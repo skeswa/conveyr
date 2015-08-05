@@ -1,3 +1,13 @@
+export class InvalidId extends Error {
+    constructor() {
+        super();
+        this.name = 'InvalidId';
+        this.message = (
+            `Ids for all Conveyr entities must be non-empty Strings.`
+        );
+    }
+}
+
 export function InvalidParameterTypeError(parameterName, correctType) {
     return new Error(
         `The type of the provided "${parameterName}" parameter is invalid. ` +

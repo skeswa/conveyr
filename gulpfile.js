@@ -8,6 +8,7 @@ var babel   = require('gulp-babel');
 var gutil   = require('gulp-util');
 var Mocha   = require('mocha');
 var glob    = require('glob');
+var karma   = require('karma');
 
 /************************** GULP MODULE CONSTANTS ****************************/
 
@@ -29,7 +30,7 @@ gulp.task('compile', function(done) {
         });
 });
 
-gulp.task('test', ['compile'], function(done) {
+gulp.task('test:node', ['compile'], function(done) {
     var mocha = new Mocha();
     // Find unit tests and add them to mocha
     glob(path.join(LIB_FOLDER, '**', '*.test.js'), {}, function(err, testFiles) {
@@ -62,6 +63,12 @@ gulp.task('test', ['compile'], function(done) {
                 }
             });
         }
+    });
+});
+
+gulp.task('test:browser', ['compile'], function(done) {
+    karma.server.start({
+        configFile: path.join(__dirname, 'karma.conf.js')
     });
 });
 

@@ -1,6 +1,5 @@
 /********************************** IMPORTS **********************************/
 
-import clone from 'deepcopy';
 import Symbol from 'core-js/es6/symbol';
 
 import {
@@ -14,12 +13,12 @@ import {
 
 /***************************** ERROR DEFINITIONS *****************************/
 
-class InvalidPayloadFormat extends Error {
+class InvalidFormat extends Error {
     constructor() {
         super();
-        this.name = 'InvalidPayloadFormat';
+        this.name = 'InvalidFormat';
         this.message = (
-            `The payload format must be either a native javascript type, a constructor function, ` +
+            `The format must be either a native javascript type, a constructor function, ` +
             `or a map of field validators.`
         );
     }
@@ -29,12 +28,17 @@ class InvalidFieldValidatorType extends Error {
     constructor(fieldName) {
         super();
         this.name = 'InvalidFieldValidatorType';
-        this.message = (
-            `The field validator called "${fieldName}" is an invalid type. ` +
-            `The type must be either a native javascript type or a fully qualified type. ` +
-            `Fully qualified types must define a type property that ` +
-            `evaluates to a native javascript type or a constructor function.`
-        );
+        if (fieldName) {
+            this.message = (
+                `The field validator called "${fieldName}" has an invalid type. ` +
+                `The type must be either a Native Javascript Type or a Class Contructor.`
+            );
+        } else {
+            this.message = (
+                `The provided field validator has an invalid type. ` +
+                `The type must be either a Native Javascript Type or a Class Contructor.`
+            );
+        }
     }
 }
 
@@ -42,10 +46,17 @@ class InvalidFieldValidatorDefault extends Error {
     constructor(fieldName) {
         super();
         this.name = 'InvalidFieldValidatorDefault';
-        this.message = (
-            `The field validator called "${fieldName}" has an invalid default. ` +
-            `Defaults must match the types that they're paired with.`
-        );
+        if (fieldName) {
+            this.message = (
+                `The field validator called "${fieldName}" has an invalid default. ` +
+                `Defaults must match the types that they're paired with.`
+            );
+        } else {
+            this.message = (
+                `The provided field validator has an invalid default. ` +
+                `Defaults must match the types that they're paired with.`
+            );
+        }
     }
 }
 
@@ -60,36 +71,25 @@ class NoFieldValidatorsDefined extends Error {
     }
 }
 
-class PayloadFieldValidationFailed extends Error {
-    constructor(fieldName, correctTypeName) {
-        super();
-        this.name = 'PayloadFieldValidationFailed';
-        this.message = (
-            `The payload field called "${fieldName}" could not be validated. ` +
-            `Make sure the value of the "${fieldName}" field is of type ${correctTypeName}.`
-        );
-    }
-}
-
 /***************************** CLASS DEFINITIONS *****************************/
 
-// Describes the result of PayloadFieldValidator.analyze()
-const ValidatorAnalysisResult = {
+// Describes the result of FieldValidator.analyze()
+export const ValidatorAnalysisResult = {
     VALID:                      1,
     INVALID:                    2,
     VALID_REQUIRES_INJECTION:   3
 };
 
-// PayloadFieldValidator symbols
+// FieldValidator symbols
 const SYM_TYPE      = Symbol('type');
 const SYM_DEFAULT   = Symbol('default');
 const SYM_NAME      = Symbol('name');
 const SYM_OPTIONAL  = Symbol('optional');
 
 /**
- * Validates a single field of the payload.
+ * Performs validator on a single field of a Store Field or an Action Payload.
  */
-class PayloadFieldValidator {
+export class FieldValidator {
     constructor(type, defaultValue, name, optional) {
         this[SYM_TYPE]      = type;
         this[SYM_DEFAULT]   = defaultValue;
@@ -106,6 +106,8 @@ class PayloadFieldValidator {
      * @return {ValidatorAnalysisResult} returns a ValidatorAnalysisResult
      */
     analyze(payload) {
+        // TODO (Sandile): update for root-level full-qualified-types
+
         const name = this[SYM_NAME];
         // Evaluate differently for "root" fields
         if (name === undefined) {
@@ -176,30 +178,70 @@ class PayloadFieldValidator {
     }
 
     /**
-     * Creates a new PayloadFieldValidator from a native js type
+     * Creates a new FieldValidator from a native js type
      * @param  {Native Type} nativeType the type of the field
      * @param  {String}      name       the name of the field
      * @param  {Boolean}     optional   true if this field is optional
-     * @return {PayloadFieldValidator}  returns a new PayloadFieldValidator wrapping the constructor
+     * @return {FieldValidator}  returns a new FieldValidator wrapping the constructor
      */
     static fromNativeType(nativeType, name, optional) {
         const defaultValue = emptyValueOfType(nativeType);
         // return the new validator
-        return new PayloadFieldValidator(nativeType, defaultValue, name, optional);
+        return new FieldValidator(nativeType, defaultValue, name, optional);
     }
 
     /**
-     * Creates a new PayloadFieldValidator from a constructor
+     * Creates a new FieldValidator from a constructor.
+     *
      * @param  {Function} constructor   the type of the field
      * @param  {String}   name          the name of the field
      * @param  {Boolean}  optional      true if this field is optional
-     * @return {PayloadFieldValidator}  returns a new PayloadFieldValidator wrapping the constructor
+     * @return {FieldValidator}  returns a new FieldValidator wrapping the constructor
      */
     static fromContructor(constructor, name, optional) {
         // There is no inferrable custom type default
         const defaultValue = undefined;
         // return the new validator
-        return new PayloadFieldValidator(constructor, defaultValue, name, optional);
+        return new FieldValidator(constructor, defaultValue, name, optional);
+    }
+
+    /**
+     * Creates a new FieldValidator from a fully-qualified-type object.
+     *
+     * @param  {Object} obj  The fully-qualified-type object
+     * @param  {String} name The name of the field
+     * @return {FieldValidator} Returns a new FieldValidator wrapping the fully-qualified-type object
+     */
+    static fromFullyQualifiedTypeObject(obj, name) {
+        // The type prop. of this f.q.t.
+        const type = obj.type;
+        // Figure out what kind the type is
+        if (isNativeType(type) || isFunction(type)) {
+            let defaultValue;
+            // Check if a default has been specified
+            if (obj.hasOwnProperty('default')) {
+                if (obj.default === null ||
+                    obj.default === undefined ||
+                    isOfType(obj.default, type)) {
+                    defaultValue = obj.default;
+                } else {
+                    throw new InvalidFieldValidatorDefault(name);
+                }
+                // Return the new field validator
+                return new FieldValidator(type, defaultValue, name, true);
+            } else {
+                return new FieldValidator(type, undefined, name, false);
+            }
+        } else {
+            throw new InvalidFieldValidatorType(name);
+        }
+    }
+
+    /**
+     * @return {Boolean} Returns true if obj is a fully-qualified-type
+     */
+    static isFullyQualifiedTypeObject(obj) {
+        return obj.hasOwnProperty('type');
     }
 
     /**
@@ -219,62 +261,48 @@ class PayloadFieldValidator {
             // Name is undefined since this validator refers to the root payload
             const name = undefined;
             // Add the new validator to the list
-            list.push(PayloadFieldValidator.fromNativeType(format, name, false));
+            list.push(FieldValidator.fromNativeType(format, name, false));
         } else if (isFunction(format)) {
             // Name is undefined since this validator refers to the root payload
             const name = undefined;
             // Add the new validator to the list
-            list.push(PayloadFieldValidator.fromContructor(format, name, false));
+            list.push(FieldValidator.fromContructor(format, name, false));
         } else if (isObject(format)) {
-            // This means that the format is actually a field validator map
-            const validatorMap = format;
-            // So, we need to loop through every field validator in the field validator map
-            let currValidatorName, currValidatorType;
-            // Map currValidatorName to each property of validatorMap
-            for (currValidatorName in validatorMap) {
-                // Only consider explicitly defined properties
-                if (validatorMap.hasOwnProperty(currValidatorName)) {
-                    // Set the validator type
-                    currValidatorType = validatorMap[currValidatorName];
-                    // Figure out what kind of value currValidatorType is
-                    if (isNativeType(currValidatorType)) {
-                        // Add the new validator to the list
-                        list.push(PayloadFieldValidator.fromNativeType(currValidatorType, currValidatorName, false));
-                    } else if (isFunction(currValidatorType)) {
-                        // Add the new validator to the list
-                        list.push(PayloadFieldValidator.fromContructor(currValidatorType, currValidatorName, false));
-                    } else if (isObject(currValidatorType)) {
-                        // This type is a "fully qualified type", so we need to make sure that it
-                        // at least has a "type" prop
-                        if (currValidatorType.hasOwnProperty('type')) {
-                            // The type prop. of this f.q.t.
-                            const type = currValidatorType.type;
-                            // Figure out what kind the type is
-                            if (isNativeType(type) || isFunction(type)) {
-                                let defaultValue;
-                                // Check if a default has been specified
-                                if (currValidatorType.hasOwnProperty('default')) {
-                                    if (currValidatorType.default === null ||
-                                        currValidatorType.default === undefined ||
-                                        isOfType(currValidatorType.default, type)) {
-                                        defaultValue = currValidatorType.default;
-                                    } else {
-                                        throw new InvalidFieldValidatorDefault(currValidatorName);
-                                    }
-                                    // Add the new validator to the list
-                                    list.push(new PayloadFieldValidator(type, defaultValue, currValidatorName, true));
-                                } else {
-                                    // Add the new validator to the list
-                                    list.push(new PayloadFieldValidator(type, undefined, currValidatorName, false));
-                                }
+            // This type is a "fully qualified type", so we need to make sure that it
+            // at least has a "type" prop
+            if (FieldValidator.isFullyQualifiedTypeObject(currValidatorType)) {
+                // Add the new validator to the list
+                list.push(FieldValidator.fromFullyQualifiedTypeObject(currValidatorType, undefined));
+            } else {
+                // This means that the format is actually a field validator map
+                const validatorMap = format;
+                // So, we need to loop through every field validator in the field validator map
+                let currValidatorName, currValidatorType;
+                // Map currValidatorName to each property of validatorMap
+                for (currValidatorName in validatorMap) {
+                    // Only consider explicitly defined properties
+                    if (validatorMap.hasOwnProperty(currValidatorName)) {
+                        // Set the validator type
+                        currValidatorType = validatorMap[currValidatorName];
+                        // Figure out what kind of value currValidatorType is
+                        if (isNativeType(currValidatorType)) {
+                            // Add the new validator to the list
+                            list.push(FieldValidator.fromNativeType(currValidatorType, currValidatorName, false));
+                        } else if (isFunction(currValidatorType)) {
+                            // Add the new validator to the list
+                            list.push(FieldValidator.fromContructor(currValidatorType, currValidatorName, false));
+                        } else if (isObject(currValidatorType)) {
+                            // This type is a "fully qualified type", so we need to make sure that it
+                            // at least has a "type" prop
+                            if (FieldValidator.isFullyQualifiedTypeObject(currValidatorType)) {
+                                // Add the new validator to the list
+                                list.push(FieldValidator.fromFullyQualifiedTypeObject(currValidatorType, currValidatorName));
                             } else {
                                 throw new InvalidFieldValidatorType(currValidatorName);
                             }
                         } else {
                             throw new InvalidFieldValidatorType(currValidatorName);
                         }
-                    } else {
-                        throw new InvalidFieldValidatorType(currValidatorName);
                     }
                 }
             }
@@ -289,47 +317,3 @@ class PayloadFieldValidator {
         return list;
     }
 }
-
-// ActionPayloadFormat symbols
-const SYM_FIELD_VALIDATORS  = Symbol('fieldValidators');
-
-/**
- * The ActionPayloadFormat is a mechanism to validate Action payloads. It accepts
- * a format representing the structure of the payload.
- */
-class ActionPayloadFormat {
-    constructor(format) {
-        this[SYM_FIELD_VALIDATORS] = PayloadFieldValidator.toList(format);
-    }
-
-    sanitize(payload) {
-        // Keep a ref for a payload clone jic
-        let payloadClone = undefined;
-        // Validate each field validator
-        let currFieldValidator;
-        for (let i = 0; i < this[SYM_FIELD_VALIDATORS].length; i++) {
-            currFieldValidator = this[SYM_FIELD_VALIDATORS][i];
-            // If the validate doesn't work, then throw a validation failure
-            switch (currFieldValidator.analyze(payload)) {
-            case ValidatorAnalysisResult.VALID_REQUIRES_INJECTION:
-                // Assert that the payload clone exists
-                if (payloadClone === undefined) {
-                    payloadClone = clone(payload);
-                }
-                // Change the payload to provide the missing defaults
-                currFieldValidator.inject(payloadClone);
-                break;
-            case ValidatorAnalysisResult.INVALID:
-                throw new PayloadFieldValidationFailed(currFieldValidator.name(), nameOfType(currFieldValidator.type()));
-            }
-        }
-        // If the payload clone is defined, return that.
-        // Othwerwise, return the payload
-        if (payloadClone === undefined) return payload;
-        else return payloadClone;
-    }
-}
-
-/********************************** EXPORTS **********************************/
-
-export default ActionPayloadFormat;
