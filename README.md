@@ -17,7 +17,7 @@ Conveyr is primarily intended for [Browserify-based](http://browserify.org/) web
 
 ## Overview
 
-![Diagram](https://raw.github.com/skeswa/conveyr/master/docs/diagram.jpg)  
+![Diagram](https://raw.github.com/skeswa/conveyr/develop/docs/diagram.jpg)  
 
 **[Actions](https://github.com/skeswa/conveyr/blob/develop/README.md#actions) are events that describe behavior.**  
 For example, consider an event that follows a user clicking a button that closes a window. An ordinary event emitted after this event could be called `close-button-clicked`. However, if instead we used an Action, it might be called `close-window`. Observe how actions describe behavior while typical events do not.  
