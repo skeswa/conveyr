@@ -81,7 +81,7 @@ import {SomeStore} from './my-stores';
 
 export const SomeService = Service('some-service')
     // An defines an endpoint with its handler
-    .exposes('tickle', function(context) {
+    .exposes('tickle', context => {
         let {action, payload, update, succeed, fail} = context;
         // Anatomy of Context:
         // - context.action:    The action that invoked this service
